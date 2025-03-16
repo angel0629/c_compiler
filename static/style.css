@@ -1,0 +1,45 @@
+
+.problem_code{
+    display: flex;
+    height: 100vh;
+    /*margin: 0;*/
+}
+
+.left-problem, .right-code {
+    flex: 1;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.left-problem {
+    background-color: #f0f0f0;
+    border-right: 2px solid #ccc;
+    overflow-y: auto;
+}
+.right-code {
+    display: flex;
+    flex-direction: column;
+}
+
+
+textarea {
+    width: 100%;
+    height: 80%;
+    font-family: monospace;
+}
+.buttons {
+    margin-top: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+table, th, td {
+    border: 1px solid black;
+}
+th, td {
+    padding: 8px;
+    text-align: left;
+}

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C 語言線上編譯器</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa; /* Soft light background */
+            color: #333; /* Darker text for readability */
+            font-family: "Arial", sans-serif; /* More modern font */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-x: hidden; /* Prevent horizontal overflow */
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 0px; /* Smaller padding for a smaller header */
+            position: relative;
+            background-color: #4a90e2; /* Calmer blue */
+            color: white;
+            border-bottom: 2px solid #7db8f1; /* Light blue */
+        }
+
+        /* Execute and Submit buttons */
+        .execute-button, .submit-button {
+            position: absolute;
+            top: 30px;
+            border-radius: 25px; /* Rounded corners */
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease; /* Smooth hover transition */
+        }
+
+        .execute-button {
+            right: 130px; /* Increased space between buttons */
+            background-color: #7db8f1; /* Light blue */
+            border: none;
+        }
+
+        .submit-button {
+            right: 20px;
+            background-color: #fd79a8; /* Light pink */
+            border: none;
+        }
+
+        button:hover {
+            transform: translateY(-2px); /* Slight hover animation */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Main layout: Question Box + Code Editor */
+        .main-container {
+            display: flex;
+            flex: 1;
+            padding: 15px;
+            gap: 20px;
+            align-items: flex-start;
+            flex-grow: 1;
+            max-width: 100%; /* Ensure it fits within the screen */
+            box-sizing: border-box;
+        }
+
+        /* Question Box */
+        #question-box {
+            width: 35%;
+            padding: 15px;
+            border-radius: 10px;
+            background-color: #ffffff;
+            height: calc(50vh - 20px);
+            overflow-y: auto;
+            box-sizing: border-box;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+        }
+
+        /* Move "問題" title to upper left */
+        #question-box h3 {
+            position: absolute;
+            top: 5px;
+            left: 15px;
+            margin-top: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #4a90e2; /* Matching header color */
+        }
+
+        /* Code Editor Container */
+        #editor-container {
+            width: 65%;
+            height: calc(50vh - 20px);
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            position: relative;
+            box-sizing: border-box;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 100%;
+        }
+
+        /* Code Editor */
+        #editor {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 10px;
+        }
+
+        /* Separator Line */
+        .separator {
+            width: 100%;
+            height: 2px;
+            background-color: #ddd;
+            margin-top: 10px;
+        }
+
+        /* Output Box */
+        #output-container {
+            width: 100%;
+            min-height: 270px;
+            max-height: 60vh;
+            border-top: 1px solid #ddd;
+            background-color: #ffffff;
+            padding: 20px;
+            overflow-y: auto;
+            resize: vertical;
+            position: relative;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        /* Move "輸出結果" title to upper left */
+        #output-container h3 {
+            position: absolute;
+            top: 5px;
+            left: 15px;
+            margin-top: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #4a90e2; /* Matching header color */
+        }
+
+        /* Adjust actual output under the title */
+        #output {
+            width: 100%;
+            height: 100%;
+            color: #333;
+            white-space: pre-wrap;
+            text-align: left;
+            margin-top: 30px; 
+        }
+    </style>
+</head>
+<body>
+    <!-- Header with title and buttons -->
+    <div class="header">
+        <h1>C 語言線上編譯器</h1>
+        <button class="execute-button" onclick="runCode()">執行程式</button>
+        <button class="submit-button" onclick="submitAnswer()">送出解答</button>
+    </div>
+
+    <!-- Main layout: Question Box + Code Editor -->
+    <div class="main-container">
+        <!-- Question box on the left -->
+        <div id="question-box">
+            <h3>問題：</h3>
+            <p>請撰寫一個 C 程式，要求使用者輸入一個數字，然後輸出該數字的平方。</p>
+            <p>接著請使用者輸入一個字串，並輸出該字串。</p>
+        </div>
+
+        <!-- Code editor on the right -->
+        <div id="editor-container">
+            <div id="editor">#include &lt;stdio.h&gt;
+int main() {
+    printf("輸入一個數字：");
+    int num;
+    scanf("%d", &num);
+    printf("你輸入的數字是 %d\n", num);
+    printf("請輸入一個字串：");
+    char txt[50];
+    scanf("%s", txt);
+    printf("你輸入的字串是: %s\n", txt);
+    return 0;
+}</div>
+        </div>
+    </div>
+
+    <!-- Separator Line -->
+    <div class="separator"></div>
+
+    <!-- Output Box -->
+    <div id="output-container">
+        <h3>輸出結果：</h3>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/chrome");
+        editor.session.setMode("ace/mode/c_cpp");
+
+        let userInputs = [];
+        let expectedInputs = [];
+        let outputDiv = document.getElementById("output");
+        let waitingForInput = false;
+        let currentInputIndex = 0;
+
+        async function runCode() {
+            const code = editor.getValue();
+            userInputs = [];
+            expectedInputs = [];
+            outputDiv.innerHTML = "";
+            
+            const printfRegex = /printf\(["']([^"']+)["']\);/g;
+            const scanfRegex = /scanf\(["'][^"']*["'],\s*&?\w+\)/g;
+            
+            let printfMatches = [];
+            let match;
+            
+            while ((match = printfRegex.exec(code)) !== null) {
+                printfMatches.push(match[1]);
+            }
+
+            let scanfMatches = code.match(scanfRegex);
+            if (scanfMatches) {
+                for (let i = 0; i < scanfMatches.length; i++) {
+                    let promptText = printfMatches[i] || `請輸入第 ${i + 1} 個輸入值：`;
+                    let lineDiv = document.createElement("div");
+                    lineDiv.innerHTML = promptText + " <span contenteditable='true' class='user-input' onkeypress='handleUserInput(event, this)'></span>";
+                    outputDiv.appendChild(lineDiv);
+                    expectedInputs.push(lineDiv.querySelector(".user-input"));
+                }
+                waitingForInput = true;
+                expectedInputs[0].focus();
+            }
+        }
+
+        function handleUserInput(event, inputElement) {
+            if (event.key === "Enter" && waitingForInput) {
+                event.preventDefault();
+                userInputs.push(inputElement.innerText.trim());
+                inputElement.contentEditable = "false";
+                currentInputIndex++;
+                
+                if (currentInputIndex < expectedInputs.length) {
+                    expectedInputs[currentInputIndex].focus();
+                } else {
+                    waitingForInput = false;
+                    sendCodeToCompiler();
+                }
+            }
+        }
+
+        async function sendCodeToCompiler() {
+            outputDiv.innerHTML += "<br>執行中...<br>";
+        }
+
+        function submitAnswer() {
+            alert("答案已送出！");
+        }
+    </script>
+</body>
+</html>

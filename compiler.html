@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C 語言線上編譯器</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+    <style>
+        body {
+            background-color: black;
+            color: limegreen;
+            font-family: "Courier New", monospace;
+            text-align: center;
+        }
+        #editor {
+            width: 80%;
+            height: 300px;
+            margin: 10px auto;
+            border: 1px solid limegreen;
+            background-color: black;
+            color: limegreen;
+        }
+        #output {
+            width: 80%;
+            height: 200px;
+            border: 1px solid limegreen;
+            overflow: auto;
+            padding: 10px;
+            white-space: pre-wrap;
+            background-color: black;
+            color: limegreen;
+            text-align: left;
+        }
+        button {
+            background-color: black;
+            color: limegreen;
+            border: 1px solid limegreen;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: limegreen;
+            color: black;
+        }
+        .user-input {
+            display: inline-block;
+            min-width: 100px;
+            border: none;
+            background: none;
+            color: limegreen;
+            font-family: "Courier New", monospace;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>C 語言線上編譯器</h1>
+    <div id="editor">#include &lt;stdio.h&gt;
+int main() {
+    int num;
+    scanf("%d", &num);
+    printf("你輸入的數字是 %d\n", num);
+    printf("請輸入一個字串：");
+    char txt[50];
+    scanf("%s", txt);
+    printf("你輸入的字串是: %s\n", txt);
+    return 0;
+}</div>
+
+    <button onclick="runCode()">執行程式</button>
+    <h3>輸出結果：</h3>
+    <div id="output"></div>
+
+    <script>
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/terminal");
+        editor.session.setMode("ace/mode/c_cpp");
+
+        let userInputs = [];
+        let expectedInputs = [];
+        let outputDiv = document.getElementById("output");
+        let waitingForInput = false;
+        let currentInputIndex = 0;
+
+        async function runCode() {
+            // **完整重置所有變數**
+            userInputs = [];
+            expectedInputs = [];
+            currentInputIndex = 0;
+            waitingForInput = false;
+
+            outputDiv.innerHTML = ""; // 清空上次的輸出內容
+            
+            const code = editor.getValue();
+            const lines = code.split("\n"); // 逐行讀取程式碼
+            
+            let lastWasPrintf = false; // 用來追蹤上一行是否是 printf
+            let questionBuffer = null; // 用來暫存 printf 內容，確保 scanf 能正確對應
+
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+
+                if (line.startsWith("printf")) {
+                    questionBuffer = line.match(/printf\(["'](.+?)["']\)/);
+                    lastWasPrintf = true; // 標記當前行是 printf
+                } 
+                else if (line.startsWith("scanf")) {
+                    let lineDiv = document.createElement("div");
+
+                    // **如果 scanf 前面沒有 printf，先插入空行**
+                    if (!lastWasPrintf) {
+                        outputDiv.appendChild(document.createElement("br"));
+                    }
+
+                    // **顯示題目（如果有）**
+                    if (questionBuffer) {
+                        let promptSpan = document.createElement("span");
+                        promptSpan.innerText = questionBuffer[1] + " ";
+                        lineDiv.appendChild(promptSpan);
+                        questionBuffer = null; // 清空 buffer
+                    }
+
+                    let inputSpan = document.createElement("span");
+                    inputSpan.contentEditable = "true";
+                    inputSpan.className = "user-input";
+                    inputSpan.onkeypress = function(event) {
+                        handleUserInput(event, this);
+                    };
+
+                    lineDiv.appendChild(inputSpan);
+                    outputDiv.appendChild(lineDiv);
+                    expectedInputs.push(inputSpan);
+
+                    lastWasPrintf = false; // 重置，避免影響下一行
+                }
+            }
+
+            if (expectedInputs.length > 0) {
+                waitingForInput = true;
+                expectedInputs[0].focus();
+            }
+        }
+
+        function handleUserInput(event, inputElement) {
+            if (event.key === "Enter" && waitingForInput) {
+                event.preventDefault();
+                let inputText = inputElement.innerText.trim();
+
+                // 檢查輸入是否為空
+                if (inputText === "") {
+                    alert("請輸入資料後再按 Enter！");
+                    return;
+                }
+
+                // 存入輸入值並鎖定該輸入框
+                userInputs.push(inputText);
+                inputElement.contentEditable = "false";
+                currentInputIndex++;
+
+                if (currentInputIndex < expectedInputs.length) {
+                    // **加入一行空白，確保下一題不會貼上去**
+                    let emptyLine = document.createElement("br");
+                    outputDiv.appendChild(emptyLine);
+
+                    // **讓下一題的題目延遲顯示，避免跳動**
+                    setTimeout(() => {
+                        expectedInputs[currentInputIndex].focus();
+                    }, 50);
+                } else {
+                    // 當所有輸入完成後，才執行程式
+                    waitingForInput = false;
+                    sendCodeToCompiler();
+                }
+            }
+        }
+
+        async function sendCodeToCompiler() {
+            outputDiv.innerHTML += "<br>執行中...<br>";
+            
+            const response = await fetch("https://wandbox.org/api/compile.json", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    code: editor.getValue(),
+                    compiler: "gcc-head",
+                    options: "-O2 -std=c11",
+                    stdin: userInputs.join("\n")
+                })
+            });
+            
+            const result = await response.json();
+            let cleanOutput = result.program_output || result.compiler_error || "編譯失敗";
+            outputDiv.innerHTML += cleanOutput;
+        }
+    </script>
+</body>
+</html>

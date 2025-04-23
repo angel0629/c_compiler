@@ -1,8 +1,9 @@
-#include <stdio.h>
+#include<stdio.h>
+#include<stdlib.h>
 
-int main() {
-    char input[100];
-    scanf("%s", input);
-    printf("hello, \n", input);
+int main(){
+    char ch[100];
+    scanf("%s",ch);
+    printf("hello, %s",ch);
     return 0;
 }

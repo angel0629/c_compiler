@@ -128,6 +128,7 @@
   </style>
 </head>
 <body>
+<<<<<<< HEAD
   <div class="container">
     <div class="left-panel">
       <h2>題目敘述</h2>
@@ -174,6 +175,14 @@
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/terminal");
     editor.session.setMode("ace/mode/c_cpp");
+=======
+    <h1>C 語言線上編譯器</h1>
+    <div id="editor">#include &lt;stdio.h&gt;
+int main() {
+    printf("你輸入的字串是: \n");
+    return 0;
+}</div>
+>>>>>>> 67584f006c0b22eacd925c079c49780f699663bb
 
     let userInputs = [];
     let expectedInputs = [];
@@ -191,11 +200,27 @@
       const code = editor.getValue();
       const lines = code.split("\n");
 
+<<<<<<< HEAD
       let lastWasPrintf = false;
       let questionBuffer = null;
 
       for (let i = 0; i < lines.length; i++) {
         let line = lines[i].trim();
+=======
+        async function runCode() {
+            userInputs = [];
+            expectedInputs = [];
+            currentInputIndex = 0;
+            waitingForInput = false;
+
+            outputDiv.innerHTML = "";
+
+            const code = editor.getValue();
+            const lines = code.split("\n");
+
+            let lastWasPrintf = false;
+            let questionBuffer = null;
+>>>>>>> 67584f006c0b22eacd925c079c49780f699663bb
 
         if (line.startsWith("printf")) {
           questionBuffer = line.match(/printf\(["'](.+?)["']\)/);
@@ -203,6 +228,7 @@
         } else if (line.startsWith("scanf")) {
           let lineDiv = document.createElement("div");
 
+<<<<<<< HEAD
           if (!lastWasPrintf) {
             outputDiv.appendChild(document.createElement("br"));
           }
@@ -220,6 +246,24 @@
           inputSpan.onkeypress = function (event) {
             handleUserInput(event, this);
           };
+=======
+                if (line.startsWith("printf")) {
+                    questionBuffer = line.match(/printf\(["'](.+?)["']\)/);
+                    lastWasPrintf = true;
+                } else if (line.startsWith("scanf")) {
+                    let lineDiv = document.createElement("div");
+
+                    if (!lastWasPrintf) {
+                        outputDiv.appendChild(document.createElement("br"));
+                    }
+
+                    if (questionBuffer) {
+                        let promptSpan = document.createElement("span");
+                        promptSpan.innerText = questionBuffer[1] + " ";
+                        lineDiv.appendChild(promptSpan);
+                        questionBuffer = null;
+                    }
+>>>>>>> 67584f006c0b22eacd925c079c49780f699663bb
 
           lineDiv.appendChild(inputSpan);
           outputDiv.appendChild(lineDiv);
@@ -229,6 +273,7 @@
         }
       }
 
+<<<<<<< HEAD
       if (expectedInputs.length > 0) {
         waitingForInput = true;
         expectedInputs[0].focus();
@@ -243,12 +288,31 @@
         if (inputText === "") {
           alert("請輸入資料後再按 Enter！");
           return;
+=======
+                    lastWasPrintf = false;
+                }
+            }
+
+            if (expectedInputs.length > 0) {
+                waitingForInput = true;
+                expectedInputs[0].focus();
+            }
+            if (expectedInputs.length > 0) {
+                waitingForInput = true;
+                expectedInputs[0].focus();
+            } else {
+                // 沒有 scanf，直接執行
+                sendCodeToCompiler();
+            }
+
+>>>>>>> 67584f006c0b22eacd925c079c49780f699663bb
         }
 
         userInputs.push(inputText);
         inputElement.contentEditable = "false";
         currentInputIndex++;
 
+<<<<<<< HEAD
         if (currentInputIndex < expectedInputs.length) {
           let emptyLine = document.createElement("br");
           outputDiv.appendChild(emptyLine);
@@ -259,10 +323,32 @@
         } else {
           waitingForInput = false;
           sendCodeToCompiler();
+=======
+                if (inputText === "") {
+                    alert("請輸入資料後再按 Enter！");
+                    return;
+                }
+
+                userInputs.push(inputText);
+                inputElement.contentEditable = "false";
+                currentInputIndex++;
+
+                if (currentInputIndex < expectedInputs.length) {
+                    outputDiv.appendChild(document.createElement("br"));
+                    setTimeout(() => {
+                        expectedInputs[currentInputIndex].focus();
+                    }, 50);
+                } else {
+                    waitingForInput = false;
+                    sendCodeToCompiler();
+                }
+            }
+>>>>>>> 67584f006c0b22eacd925c079c49780f699663bb
         }
       }
     }
 
+<<<<<<< HEAD
     async function sendCodeToCompiler() {
       outputDiv.innerHTML += "<br>執行中...<br>";
       const code = editor.getValue();
@@ -291,5 +377,46 @@
       alert("答案已送出！");
     }
   </script>
+=======
+        async function sendCodeToCompiler() {
+
+            outputDiv.innerHTML += "<br>執行中...<br>";
+
+            const response = await fetch("https://emkc.org/api/v2/piston/execute", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    language: "c",
+                    version: "*",
+                    stdin: userInputs.join("\n"),
+                    files: [
+                        {
+                            name: "main.c",
+                            content: editor.getValue()
+                        }
+                    ]
+                })
+            });
+
+            const result = await response.json();
+            console.log(result); // <<<<< 新增這一行，檢查完整回傳
+            let cleanOutput = "";
+
+            if (result.run && result.run.stdout) {
+                cleanOutput += result.run.stdout;
+            }
+            if (result.run && result.run.stderr) {
+                cleanOutput += "<br><span style='color:red'>" + result.run.stderr + "</span>";
+            }
+            if (result.compile && result.compile.stderr) {
+                cleanOutput += "<br><span style='color:orange'>" + result.compile.stderr + "</span>";
+            }
+
+            outputDiv.innerHTML += cleanOutput || "無輸出";
+        }
+    </script>
+>>>>>>> 67584f006c0b22eacd925c079c49780f699663bb
 </body>
 </html>

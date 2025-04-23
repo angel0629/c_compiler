@@ -92,24 +92,24 @@
             }
             let allPassed = true;
             result.results.forEach(({ input, expected, output, error }) => {
-                outputElement.innerText += `输入: ${input}\n`;
-                outputElement.innerText += `期望输出: ${expected}\n`;
-                outputElement.innerText += `实际输出: ${output || "执行 错误"}\n`;
+                outputElement.innerText += `輸入: ${input}\n`;
+                outputElement.innerText += `期望輸出： ${expected}\n`;
+                outputElement.innerText += `實際輸出： ${output || "執行錯誤"}\n`;
 
                 if (error || output!== expected){
                     allPassed = false;
                 }
 
-                if (error) outputElement.innerText += `错误: ${error}\n`;
+                if (error) outputElement.innerText += `ERROR: ${error}\n`;
                 outputElement.innerText += "-------------------------\n";
 
             });
 
             if (allPassed) {
-                outputElement.innerText += "\nJudge 通过 ✅";
+                outputElement.innerText += "\nJudge 通過 ✅";
                 outputElement.classList.add("pass");
             } else {
-                outputElement.innerText += "\nJudge 没通过 ❌";
+                outputElement.innerText += "\nJudge 沒通過 ❌";
                 outputElement.classList.add("fail");
             }
         }

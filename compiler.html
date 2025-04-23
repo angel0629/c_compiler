@@ -57,13 +57,7 @@
     <h1>C 語言線上編譯器</h1>
     <div id="editor">#include &lt;stdio.h&gt;
 int main() {
-    int num;
-    scanf("%d", &num);
-    printf("你輸入的數字是 %d\n", num);
-    printf("請輸入一個字串：");
-    char txt[50];
-    scanf("%s", txt);
-    printf("你輸入的字串是: %s\n", txt);
+    printf("你輸入的字串是: \n");
     return 0;
 }</div>
 
@@ -83,41 +77,37 @@ int main() {
         let currentInputIndex = 0;
 
         async function runCode() {
-            // **完整重置所有變數**
             userInputs = [];
             expectedInputs = [];
             currentInputIndex = 0;
             waitingForInput = false;
 
-            outputDiv.innerHTML = ""; // 清空上次的輸出內容
-            
+            outputDiv.innerHTML = "";
+
             const code = editor.getValue();
-            const lines = code.split("\n"); // 逐行讀取程式碼
-            
-            let lastWasPrintf = false; // 用來追蹤上一行是否是 printf
-            let questionBuffer = null; // 用來暫存 printf 內容，確保 scanf 能正確對應
+            const lines = code.split("\n");
+
+            let lastWasPrintf = false;
+            let questionBuffer = null;
 
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i].trim();
 
                 if (line.startsWith("printf")) {
                     questionBuffer = line.match(/printf\(["'](.+?)["']\)/);
-                    lastWasPrintf = true; // 標記當前行是 printf
-                } 
-                else if (line.startsWith("scanf")) {
+                    lastWasPrintf = true;
+                } else if (line.startsWith("scanf")) {
                     let lineDiv = document.createElement("div");
 
-                    // **如果 scanf 前面沒有 printf，先插入空行**
                     if (!lastWasPrintf) {
                         outputDiv.appendChild(document.createElement("br"));
                     }
 
-                    // **顯示題目（如果有）**
                     if (questionBuffer) {
                         let promptSpan = document.createElement("span");
                         promptSpan.innerText = questionBuffer[1] + " ";
                         lineDiv.appendChild(promptSpan);
-                        questionBuffer = null; // 清空 buffer
+                        questionBuffer = null;
                     }
 
                     let inputSpan = document.createElement("span");
@@ -131,7 +121,7 @@ int main() {
                     outputDiv.appendChild(lineDiv);
                     expectedInputs.push(inputSpan);
 
-                    lastWasPrintf = false; // 重置，避免影響下一行
+                    lastWasPrintf = false;
                 }
             }
 
@@ -139,6 +129,14 @@ int main() {
                 waitingForInput = true;
                 expectedInputs[0].focus();
             }
+            if (expectedInputs.length > 0) {
+                waitingForInput = true;
+                expectedInputs[0].focus();
+            } else {
+                // 沒有 scanf，直接執行
+                sendCodeToCompiler();
+            }
+
         }
 
         function handleUserInput(event, inputElement) {
@@ -146,28 +144,21 @@ int main() {
                 event.preventDefault();
                 let inputText = inputElement.innerText.trim();
 
-                // 檢查輸入是否為空
                 if (inputText === "") {
                     alert("請輸入資料後再按 Enter！");
                     return;
                 }
 
-                // 存入輸入值並鎖定該輸入框
                 userInputs.push(inputText);
                 inputElement.contentEditable = "false";
                 currentInputIndex++;
 
                 if (currentInputIndex < expectedInputs.length) {
-                    // **加入一行空白，確保下一題不會貼上去**
-                    let emptyLine = document.createElement("br");
-                    outputDiv.appendChild(emptyLine);
-
-                    // **讓下一題的題目延遲顯示，避免跳動**
+                    outputDiv.appendChild(document.createElement("br"));
                     setTimeout(() => {
                         expectedInputs[currentInputIndex].focus();
                     }, 50);
                 } else {
-                    // 當所有輸入完成後，才執行程式
                     waitingForInput = false;
                     sendCodeToCompiler();
                 }
@@ -175,22 +166,42 @@ int main() {
         }
 
         async function sendCodeToCompiler() {
+
             outputDiv.innerHTML += "<br>執行中...<br>";
-            
-            const response = await fetch("https://wandbox.org/api/compile.json", {
+
+            const response = await fetch("https://emkc.org/api/v2/piston/execute", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json"
+                },
                 body: JSON.stringify({
-                    code: editor.getValue(),
-                    compiler: "gcc-head",
-                    options: "-O2 -std=c11",
-                    stdin: userInputs.join("\n")
+                    language: "c",
+                    version: "*",
+                    stdin: userInputs.join("\n"),
+                    files: [
+                        {
+                            name: "main.c",
+                            content: editor.getValue()
+                        }
+                    ]
                 })
             });
-            
+
             const result = await response.json();
-            let cleanOutput = result.program_output || result.compiler_error || "編譯失敗";
-            outputDiv.innerHTML += cleanOutput;
+            console.log(result); // <<<<< 新增這一行，檢查完整回傳
+            let cleanOutput = "";
+
+            if (result.run && result.run.stdout) {
+                cleanOutput += result.run.stdout;
+            }
+            if (result.run && result.run.stderr) {
+                cleanOutput += "<br><span style='color:red'>" + result.run.stderr + "</span>";
+            }
+            if (result.compile && result.compile.stderr) {
+                cleanOutput += "<br><span style='color:orange'>" + result.compile.stderr + "</span>";
+            }
+
+            outputDiv.innerHTML += cleanOutput || "無輸出";
         }
     </script>
 </body>

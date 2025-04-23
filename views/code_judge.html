@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Judge</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h2> Code and Judge</h2>
+    <a href="/problem_list"><button>&lt;-back to problem_list</button></a>
+    <button>Judge</button>
+    <button>fast test x</button>
+    <a href="/judge_list"><button>Judge list</button></a>
+    <button>run x</button>
+    <div class="problem_code">
+        <div class="left-problem">
+            <h4>題目描述</h4>
+            <table>
+                <tr>
+                    <th>內容</th>
+                </tr>
+                <tr>
+                    <td>
+                        學習所有程式語言的第一個練習題，請寫一個程式，可以讀入指定的字串，並且輸出指定的字串。
+                        比如：輸入字串 "world", 則請輸出 "hello, world"
+                    </td>
+                </tr>
+            </table>
+            <br>
+            <table>
+                <tr>
+                    <th>輸入輸出</th>
+                </tr>
+                <tr>
+                    <td>
+                        輸入說明：
+                        輸入總共一行，內含一組文字
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        輸出說明：
+                        輸出題目指定的文字。
+                    </td>
+                </tr>
+            </table>
+            <br>
+            <table>
+                <tr>
+                    <td>範例輸入</td>
+                    <td>範例輸出</td>
+                </tr>
+                <tr>
+                    <td>world</td>
+                    <td>hello, world</td>
+                </tr>
+                <tr>
+                    <td>c++</td>
+                    <td>hello, c++</td>
+                </tr>
+                <tr>
+                    <td>Taiwan</td>
+                    <td>hello, Taiwan</td>
+                </tr>
+            </table>
+        </div>
+        <div class="right-code">
+            <button onclick="submitCode()">Submit</button>
+            <textarea id="codeInput" placeholder="在這裡輸入程式碼..."></textarea>
+            <pre id="output"></pre>
+        </div>
+    </div>
+    <script>
+        async function submitCode() {
+            const code = document.getElementById("codeInput").value;
+            const response = await fetch("/judge", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code })
+            });
+
+            const result = await response.json();
+            const outputElement = document.getElementById("output");
+            outputElement.innerText = "";
+            outputElement.className = "";//清除背景顏色
+
+
+            if (result.error) {
+                outputElement.innerText = result.error;
+                return;
+            }
+            let allPassed = true;
+            result.results.forEach(({ input, expected, output, error }) => {
+                outputElement.innerText += `输入: ${input}\n`;
+                outputElement.innerText += `期望输出: ${expected}\n`;
+                outputElement.innerText += `实际输出: ${output || "执行 错误"}\n`;
+
+                if (error || output!== expected){
+                    allPassed = false;
+                }
+
+                if (error) outputElement.innerText += `错误: ${error}\n`;
+                outputElement.innerText += "-------------------------\n";
+
+            });
+
+            if (allPassed) {
+                outputElement.innerText += "\nJudge 通过 ✅";
+                outputElement.classList.add("pass");
+            } else {
+                outputElement.innerText += "\nJudge 没通过 ❌";
+                outputElement.classList.add("fail");
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background: #f4f6f9;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* 頁首標題區 */
+header {
+    background: linear-gradient(to right, #3a6cc8, #64a4f4);
+    padding: 10px 20px;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 主容器分左右兩欄 */
+.main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* 左欄：題目敘述 */
+.left-panel {
+    width: 45%;
+    padding: 20px;
+    background: #ffffff;
+    border-right: 2px solid #ccc;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.left-panel h2 {
+    color: #007bff;
+}
+
+.left-panel table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.left-panel th, .left-panel td {
+    border: 1px solid #333;
+    padding: 8px;
+    text-align: left;
+}
+
+/* 右欄：編輯器與按鈕區 */
+.right-panel {
+    
+    width: 55%;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    background: #fefefe;
+}
+
+/* 執行按鈕與送出按鈕 */
+.button-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+button {
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: 0.3s;
+}
+
+button.run {
+    background-color: #4a90e2;
+    color: white;
+}
+
+button.submit {
+    background-color: #fd79a8;
+    color: white;
+}
+
+button:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+/* ACE 編輯器容器 */
+#editor {
+    border-radius: 8px;
+    background-color: rgb(255, 255, 255);
+    /* color: rgb(0, 0, 0); */
+    flex-grow: 1;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+/* 輸出區塊 */
+#output {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 10px;
+    background-color: rgb(255, 255, 255);
+    color: #007bff;
+    white-space: pre-wrap;
+    font-family: 'Courier New', monospace;
+    height: 200px;
+    overflow-y: auto;
+    border: 1px solid rgb(0, 0, 0);
+}
+
+/* 使用者輸入欄 */
+.user-input {
+    display: inline-block;
+    min-width: 100px;
+    border: none;
+    background-color: white;
+    color: rgb(0, 0, 0);
+    font-family: "Courier New", monospace;
+    outline: none;
+}

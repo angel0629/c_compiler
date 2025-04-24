@@ -40,7 +40,7 @@ app.get("/judge_list", (req, res) => {
 
 
 
-app.post("/judge", async(req, res) => {
+app.post("/submit", async(req, res) => {
     const code = req.body.code;
     testCases = await db.getTestCases(); //FIXME:可以新增q_id
     if (!code) {

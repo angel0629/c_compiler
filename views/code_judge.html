@@ -9,7 +9,6 @@
 <body>
     <h2> Code and Judge</h2>
     <a href="/problem_list"><button>&lt;-back to problem_list</button></a>
-    <button>Judge</button>
     <button>fast test x</button>
     <a href="/judge_list"><button>Judge list</button></a>
     <button>run x</button>
@@ -74,7 +73,7 @@
     <script>
         async function submitCode() {
             const code = document.getElementById("codeInput").value;
-            const response = await fetch("/judge", {
+            const response = await fetch("/submit", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ code })
@@ -93,7 +92,7 @@
             let allPassed = true;
             result.results.forEach(({ input, expected, output, error }) => {
                 outputElement.innerText += `輸入: ${input}\n`;
-                outputElement.innerText += `期望輸出： ${expected}\n`;
+                outputElement.innerText += `正確輸出： ${expected}\n`;
                 outputElement.innerText += `實際輸出： ${output || "執行錯誤"}\n`;
 
                 if (error || output!== expected){

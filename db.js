@@ -28,5 +28,4 @@ module.exports = {
     return rows[0];
   },
     */
-  // 你可以繼續加其他查詢
 };

@@ -24,13 +24,33 @@
                     const res = await fetch(`/api/problem/${q_id}`);
                     const data = await res.json();
 
-                    document.getElementById('info').textContent = data.info;
-                    document.getElementById('input_info').textContent = data.Input_info;
-                    document.getElementById('output_info').textContent = data.Output_info;
+                    document.getElementById('info').textContent = data.problem.info;
+                    document.getElementById('input_info').textContent = data.problem.Input_info;
+                    document.getElementById('output_info').textContent = data.problem.Output_info;
                     console.log('q_id:', q_id); // 如果是 null 就代表網址沒帶參數
-                    //document.getElementById('description').textContent = data.description;
+                    
+
+                    //範例輸入輸出
+                    const tbody = document.getElementById('show_info_list');
+                    data.example.forEach(i => {
+                    const tr = document.createElement('tr');
+        
+                    // 範例輸入
+                    const In_example = document.createElement('td');
+                    In_example.textContent = i.Input;
+        
+                    // 範例輸出
+                    const Out_example = document.createElement('td');
+                    Out_example.textContent = i.Output;
+        
+                    // 組合這列
+                    tr.appendChild(In_example);
+                    tr.appendChild(Out_example);
+        
+                    // 加進 tbody
+                    tbody.appendChild(tr);
+                    });
                 }
-            
                 fetchProblem();
             </script>
             <table>
@@ -56,23 +76,13 @@
                 </tr>
             </table>
             <br>
-            <table>
-                <tr>
-                    <td>範例輸入</td>
-                    <td>範例輸出</td>
-                </tr>
-                <tr>
-                    <td>world</td>
-                    <td>hello, world</td>
-                </tr>
-                <tr>
-                    <td>c++</td>
-                    <td>hello, c++</td>
-                </tr>
-                <tr>
-                    <td>Taiwan</td>
-                    <td>hello, Taiwan</td>
-                </tr>
+            <table  border="1">
+                <thead>
+                    <th>範例輸入</th>
+                    <th>範例輸出</th>
+                </thead>
+                <tbody id="show_info_list">
+                </tbody>
             </table>
         </div>
         <div class="right-code">

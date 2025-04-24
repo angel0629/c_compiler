@@ -46,7 +46,8 @@ app.get("/code_judge", (req, res) => {
 app.get("/api/problem/:id", async (req, res) => {
     const q_id = req.params.id;
     const problem = await db.getQuestionById(q_id);
-    res.json(problem);
+    const example = await db.getExampleById(q_id);
+    res.json({problem, example});
 });
 
 

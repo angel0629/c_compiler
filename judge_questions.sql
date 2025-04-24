@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2025-04-23 12:01:31
--- 伺服器版本： 10.4.28-MariaDB
--- PHP 版本： 8.2.4
+-- 產生時間： 2025-04-24 20:00:57
+-- 伺服器版本： 10.4.32-MariaDB
+-- PHP 版本： 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -72,16 +72,18 @@ CREATE TABLE `questions` (
   `id` int(11) NOT NULL,
   `no` int(11) NOT NULL,
   `name` text NOT NULL,
-  `info` text NOT NULL
+  `info` text NOT NULL,
+  `Input_info` text NOT NULL,
+  `Output_info` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- 傾印資料表的資料 `questions`
 --
 
-INSERT INTO `questions` (`id`, `no`, `name`, `info`) VALUES
-(1, 1, '輸入', '學習所有程式語言的第一個練習題：請寫一個程式，可以讀入指定的字串，並且輸出指定的字串。例如：輸入字串 \"world\"，則請輸出 \"hello, world\"。輸入說明:輸入總共一行，內含一組文字\\n輸出說明:輸出題目指定的文字。'),
-(2, 2, '找出和', '請寫一個程式，讀入兩個數字，並求出它們的和。輸入說明:每組輸入共一行，內含有兩個整數 a, b，以空白隔開，a, b絕對值皆小於10的6次方。\\n輸出說明:對於每組輸入，輸出該兩整數的和。');
+INSERT INTO `questions` (`id`, `no`, `name`, `info`, `Input_info`, `Output_info`) VALUES
+(1, 1, '輸入', '學習所有程式語言的第一個練習題：請寫一個程式，可以讀入指定的字串，並且輸出指定的字串。例如：輸入字串 \"world\"，則請輸出 \"hello, world\"。', '輸入總共一行，內含一組文字', '輸出題目指定的文字。'),
+(2, 2, '找出和', '請寫一個程式，讀入兩個數字，並求出它們的和。', '每組輸入共一行，內含有兩個整數 a, b，以空白隔開，a, b絕對值皆小於10的6次方。', '對於每組輸入，輸出該兩整數的和。');
 
 -- --------------------------------------------------------
 

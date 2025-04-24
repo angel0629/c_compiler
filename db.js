@@ -21,6 +21,16 @@ module.exports = {
         }));
       
         return testCases;
+      },
+      getQuestionById: async (q_id) => { 
+        const [rows] = await promisePool.query('SELECT id, no, name, info,Input_info, Output_info FROM `questions` WHERE id = ?', [q_id]);
+        return rows[0];
+      },
+      
+      //選出全部的題目
+      getAllQuestions: async () => { 
+        const [rows] = await promisePool.query('SELECT id, no,name FROM `questions`;');
+        return rows;
       }
   /*
   getUserById: async (id) => {

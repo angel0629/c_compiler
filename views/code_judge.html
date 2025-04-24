@@ -15,32 +15,43 @@
     <div class="problem_code">
         <div class="left-problem">
             <h4>題目描述</h4>
+            <script>
+                // 取得 URL 中的參數
+                const urlParams = new URLSearchParams(window.location.search);
+                const q_id = urlParams.get('q_id');
+            
+                async function fetchProblem() {
+                    const res = await fetch(`/api/problem/${q_id}`);
+                    const data = await res.json();
+
+                    document.getElementById('info').textContent = data.info;
+                    document.getElementById('input_info').textContent = data.Input_info;
+                    document.getElementById('output_info').textContent = data.Output_info;
+                    console.log('q_id:', q_id); // 如果是 null 就代表網址沒帶參數
+                    //document.getElementById('description').textContent = data.description;
+                }
+            
+                fetchProblem();
+            </script>
             <table>
                 <tr>
                     <th>內容</th>
                 </tr>
                 <tr>
-                    <td>
-                        學習所有程式語言的第一個練習題，請寫一個程式，可以讀入指定的字串，並且輸出指定的字串。
-                        比如：輸入字串 "world", 則請輸出 "hello, world"
+                    <td id="info">
                     </td>
                 </tr>
             </table>
             <br>
             <table>
                 <tr>
-                    <th>輸入輸出</th>
+                    <th>輸入</th>
+                    <th>輸出</th>
                 </tr>
                 <tr>
-                    <td>
-                        輸入說明：
-                        輸入總共一行，內含一組文字
+                    <td id="input_info">
                     </td>
-                </tr>
-                <tr>
-                    <td>
-                        輸出說明：
-                        輸出題目指定的文字。
+                    <td id="output_info">
                     </td>
                 </tr>
             </table>

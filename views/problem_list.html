@@ -7,6 +7,54 @@
 </head>
 <body>
     <h2> 題目 List</h2>
+    <script>
+        async function fetchProblems() {
+            const res = await fetch('/api/problem_data'); // 從後端 API 抓資料
+            const data = await res.json();
+    
+            const tbody = document.getElementById('show_list');
+    
+            data.forEach(problem => {
+                const tr = document.createElement('tr');
+    
+                // 題號
+                const tdNo = document.createElement('td');
+                tdNo.textContent = problem.no;
+    
+                // 標題
+                const tdTitle = document.createElement('td');
+                tdTitle.textContent = problem.name;
+    
+                // 按鈕／超連結
+                const tdLink = document.createElement('td');
+                const a = document.createElement('a');
+                a.href = `/code_judge?q_id=${problem.id}`;
+                a.textContent = '答題';
+                a.classList.add('btn'); // optional: 給按鈕樣式
+                tdLink.appendChild(a);
+    
+                // 組合這列
+                tr.appendChild(tdNo);
+                tr.appendChild(tdTitle);
+                tr.appendChild(tdLink);
+    
+                // 加進 tbody
+                tbody.appendChild(tr);
+            });
+        }
+    
+        fetchProblems();
+    </script>
+    
+    <table  border="1">
+        <thead>
+            <th>題號</th>
+            <th>標題</th>
+            <th></th>
+        </thead>
+        <tbody id="show_list">
+        </tbody>
+    </table>
     <table>
         <tr>
             <td><a href="/code_judge"><button>題目一 hello world</button></a></td>

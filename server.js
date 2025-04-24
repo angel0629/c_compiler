@@ -8,9 +8,9 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "static"))); // 提供静态文件
-// 题目的标准测试用例
+app.use(express.static(path.join(__dirname, "static")));
 /*
+// 原本的測試資料
 const testCases = [
     { input: "world", expected: "hello, world" },
     { input: "c++", expected: "hello, c++" },
@@ -18,22 +18,39 @@ const testCases = [
 ];
 */
 
-// 首页重定向到 problem_list
+//首頁設為 題目的 list
 app.get("/", (req, res) => {
     res.redirect("/problem_list");
 });
 
-// 题目列表
+//題目的 list
+// 提供前端資料 API
+app.get("/api/problem_data", async (req, res) => {
+    try {
+        const problem_data = await db.getAllQuestions();
+        res.json(problem_data);
+    } catch (error) {
+        res.status(500).json({ error: "資料讀取錯誤" });
+    }
+});
+
+// 提供 HTML 頁面
 app.get("/problem_list", (req, res) => {
     res.sendFile(path.join(__dirname, "views", "problem_list.html"));
 });
 
-// 代码判题页面
+//寫程式的頁面
 app.get("/code_judge", (req, res) => {
     res.sendFile(path.join(__dirname, "views", "code_judge.html"));
 });
+app.get("/api/problem/:id", async (req, res) => {
+    const q_id = req.params.id;
+    const problem = await db.getQuestionById(q_id);
+    res.json(problem);
+});
 
-// 评测列表
+
+// 使用者測試的紀錄
 app.get("/judge_list", (req, res) => {
     res.sendFile(path.join(__dirname, "views", "judge_list.html"));
 });
@@ -47,30 +64,30 @@ app.post("/submit", async(req, res) => {
         return res.status(400).json({ error: "No code provided" });
     }
 
-    // 保存 C 代码到文件
+    //把使用者輸入存入 main.c
     const filePath = path.join(__dirname, "main.c");
     fs.writeFileSync(filePath, code);
 
-    // 确保 temp 目录存在
+    //確保 temp 目錄存在
     const tempDir = path.join(__dirname, "temp");
     if (!fs.existsSync(tempDir)) {
         fs.mkdirSync(tempDir);
     }
 
-    // 编译 C 代码
+    //編譯 C 語言程式碼
     exec(`gcc ${filePath} -o ${tempDir}/main.exe`, (compileErr, _, compileStderr) => {
         if (compileErr) {
             return res.json({ error: "編譯錯誤：\n" + compileStderr });
         }
 
-        // 依次运行测试用例
+        //依次執行每個測資
         let results = [];
         let completed = 0;
 
         testCases.forEach(({ input, expected }, index) => {
             const process = exec(`${tempDir}/main.exe`, { timeout: 2000 });
 
-            // 将输入传入可执行文件
+            //將輸入值傳入程式
             process.stdin.write(input + "\n");
             process.stdin.end();
 

@@ -12,8 +12,8 @@ const pool = mysql.createPool({
 const promisePool = pool.promise();
 
 module.exports = {
-    getTestCases: async () => { 
-        const [rows] = await promisePool.query('SELECT Input, Output FROM `test` WHERE q_id=1');
+    getTestCases: async (q_id) => { 
+        const [rows] = await promisePool.query('SELECT Input, Output FROM `test` WHERE q_id=?', [q_id]);
       
         const testCases = rows.map(row => ({
           input: row.Input,
@@ -22,6 +22,16 @@ module.exports = {
       
         return testCases;
     },
+    getExampleCases: async (q_id) => { 
+      const [rows] = await promisePool.query('SELECT Input, Output FROM `example` WHERE q_id=?', [q_id]);
+    
+      const testCases = rows.map(row => ({
+        input: row.Input,
+        expected: row.Output
+      }));
+    
+      return testCases;
+  },
     //題目 info
     getQuestionById: async (q_id) => { 
       const [rows] = await promisePool.query('SELECT id, no, name, info,Input_info, Output_info FROM `questions` WHERE id = ?', [q_id]);

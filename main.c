@@ -1,9 +1,8 @@
-#include<stdio.h>
-#include<stdlib.h>
+ # include <stdio.h>
 
 int main(){
-    char ch[100];
-    scanf("%s",ch);
-    printf("hello, %s",ch);
+    int a,b;
+    scanf("%d %d", &a, &b);
+    printf("%d\n", a+b);
     return 0;
 }

@@ -9,7 +9,7 @@
 <body>
     <h2> Code and Judge</h2>
     <a href="/problem_list"><button>&lt;-back to problem_list</button></a>
-    <button>fast test x</button>
+    <button onclick="testExampleCode()">測試範例</button>
     <a href="/judge_list"><button>Judge list</button></a>
     <button>run x</button>
     <div class="problem_code">
@@ -92,12 +92,55 @@
         </div>
     </div>
     <script>
+        async function testExampleCode() {
+            const code = document.getElementById("codeInput").value;
+            const response = await fetch("/test_example", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code,q_id })
+            });
+
+            const result = await response.json();
+            const outputElement = document.getElementById("output");
+            outputElement.innerText = "";
+            outputElement.className = "";//清除背景顏色
+
+
+            if (result.error) {
+                outputElement.innerText = result.error;
+                return;
+            }
+            let allPassed = true;
+            result.results.forEach(({ input, expected, output, error }) => {
+                outputElement.innerText += `輸入: ${input}\n`;
+                outputElement.innerText += `正確輸出： ${expected}\n`;
+                outputElement.innerText += `實際輸出： ${output || "執行錯誤"}\n`;
+
+                if (error || output!== expected){
+                    allPassed = false;
+                }
+
+                if (error) outputElement.innerText += `ERROR: ${error}\n`;
+                outputElement.innerText += "-------------------------\n";
+
+            });
+
+            if (allPassed) {
+                outputElement.innerText += "\n範例測試 通過 ✅";
+                outputElement.classList.add("pass");
+            } else {
+                outputElement.innerText += "\n範例測試 沒通過 ❌";
+                outputElement.classList.add("fail");
+            }
+        }
+    </script>
+    <script>
         async function submitCode() {
             const code = document.getElementById("codeInput").value;
             const response = await fetch("/submit", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ code })
+                body: JSON.stringify({ code,q_id })
             });
 
             const result = await response.json();

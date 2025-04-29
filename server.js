@@ -56,11 +56,72 @@ app.get("/judge_list", (req, res) => {
     res.sendFile(path.join(__dirname, "views", "judge_list.html"));
 });
 
+//用範例給的程式碼測試
+app.post("/test_example", async(req, res) => {
+    const code = req.body.code;
+    testCases = await db.getExampleCases(req.body.q_id);
+    if (!code) {
+        return res.status(400).json({ error: "No code provided" });
+    }
 
+    //把使用者輸入存入 main.c
+    const filePath = path.join(__dirname, "main.c");
+    fs.writeFileSync(filePath, code);
 
+    //確保 temp 目錄存在
+    const tempDir = path.join(__dirname, "temp");
+    if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir);
+    }
+
+    //編譯 C 語言程式碼
+    exec(`gcc ${filePath} -o ${tempDir}/main.exe`, (compileErr, _, compileStderr) => {
+        if (compileErr) {
+            return res.json({ error: "編譯錯誤：\n" + compileStderr });
+        }
+
+        //依次執行每個測資
+        let results = [];
+        let completed = 0;
+
+        testCases.forEach(({ input, expected }, index) => {
+            const process = exec(`${tempDir}/main.exe`, { timeout: 2000 });
+
+            //將輸入值傳入程式
+            process.stdin.write(input + "\n");
+            process.stdin.end();
+
+            let output = "";
+
+            process.stdout.on("data", (data) => {
+                output += data;
+            });
+
+            process.stderr.on("data", (data) => {
+                results[index] = { input, expected, output: null, error: data.trim() };
+                completed++;
+                checkCompletion();
+            });
+
+            process.on("close", () => {
+                results[index] = { input, expected, output: output.trim(), error: null };
+                completed++;
+                checkCompletion();
+            });
+
+            function checkCompletion() {
+                if (completed === testCases.length) {
+                    res.json({ results });
+                }
+            }
+        });
+    });
+});
+
+// 繳交程式碼
 app.post("/submit", async(req, res) => {
     const code = req.body.code;
-    testCases = await db.getTestCases(); //FIXME:可以新增q_id
+    testCases = await db.getTestCases(req.body.q_id);
     if (!code) {
         return res.status(400).json({ error: "No code provided" });
     }

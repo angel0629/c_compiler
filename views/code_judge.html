@@ -169,10 +169,18 @@
             });
 
             if (allPassed) {
-                outputElement.innerText += "\nJudge 通過 ✅";
+                //outputElement.innerText += "\nJudge 通過 ✅";
+                const img = document.createElement("img");
+                img.src = "judge_success.jpg";
+                img.style.width = "150px"; // 自訂大小
+                outputElement.appendChild(img);
                 outputElement.classList.add("pass");
             } else {
-                outputElement.innerText += "\nJudge 沒通過 ❌";
+            //outputElement.innerText += "\nJudge 沒通過 ❌";
+                const img = document.createElement("img");
+                img.src = "judge_failed.jpg";
+                img.style.width = "150px"; // 自訂大小
+                outputElement.appendChild(img);
                 outputElement.classList.add("fail");
             }
         }

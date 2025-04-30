@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>C語言線上AI互動學習平台 - 錯誤提示版</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .top-right-buttons {
+            width: 80%;
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+        .top-right-buttons button {
+            margin-left: 10px;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        #runBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #editor {
+            width: 80%;
+            height: 300px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+        #tipsArea, #outputArea {
+            width: 80%;
+            background-color: #e6f7ff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #91d5ff;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        #tipsTitle, #outputTitle {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- 按鈕 -->
+    <div class="top-right-buttons">
+        <button id="runBtn">執行程式</button>
+    </div>
+
+    <!-- 編輯器 -->
+    <div id="editor">#include &lt;stdio.h&gt;
+
+int main() {
+    printf("你好家生\\n");
+    return 0;
+}</div>
+
+    <!-- 提示區 -->
+    <div id="tipsArea">
+        <div id="tipsTitle">Tips：</div>
+        <div id="tipsContent">目前尚未偵測到內容錯誤。</div>
+    </div>
+
+    <!-- 輸出 -->
+    <div id="outputArea">
+        <div id="outputTitle">目前輸入的程式碼：</div>
+        <pre id="outputContent"></pre>
+    </div>
+
+</div>
+
+<script>
+    const editor = ace.edit("editor");
+    editor.setTheme("ace/theme/github");
+    editor.session.setMode("ace/mode/c_cpp");
+
+    // 原始正確程式碼，初始不檢查
+    const initialCode = editor.getValue();
+    let hasChanged = false;
+
+    function checkErrors() {
+        const code = editor.getValue();
+        const lines = code.split('\n');
+        const annotations = [];
+        const tips = [];
+
+        // 如果內容還沒變動，不進行檢查
+        if (!hasChanged || code === initialCode) {
+            editor.session.clearAnnotations();
+            document.getElementById("tipsContent").innerHTML = "目前尚未偵測到內容錯誤。";
+            return;
+        }
+
+        lines.forEach((line, index) => {
+            const trimmed = line.trim();
+
+            // 缺分號
+            if (trimmed.length > 0 &&
+                !trimmed.startsWith("#") &&
+                !trimmed.endsWith(";") &&
+                !trimmed.endsWith("{") &&
+                !trimmed.endsWith("}")) {
+                annotations.push({
+                    row: index,
+                    column: 0,
+                    text: "可能缺少分號 ';'",
+                    type: "error"
+                });
+                tips.push(`第 ${index + 1} 行可能缺少分號 ';'。`);
+            }
+
+            // 拼錯 printf
+            if (trimmed.includes("rintf(")) {
+                annotations.push({
+                    row: index,
+                    column: 0,
+                    text: "你是不是想打 printf？",
+                    type: "error"
+                });
+                tips.push(`第 ${index + 1} 行：printf 拼錯。`);
+            }
+
+            // if 誤用 =
+            if (trimmed.match(/if\s*\(.*[^=!<>]=[^=].*\)/)) {
+                annotations.push({
+                    row: index,
+                    column: 0,
+                    text: "你可能誤用了 '=' 應改為 '=='",
+                    type: "warning"
+                });
+                tips.push(`第 ${index + 1} 行：比較運算子可能誤用 '='。`);
+            }
+        });
+
+        editor.session.setAnnotations(annotations);
+        document.getElementById("tipsContent").innerHTML = tips.length ? tips.join('<br>') : "目前尚未偵測到內容錯誤。";
+    }
+
+    // 編輯器變更監聽
+    editor.session.on('change', () => {
+        hasChanged = true;
+        checkErrors();
+    });
+
+    // 執行按鈕
+    document.getElementById("runBtn").addEventListener("click", function () {
+        const code = editor.getValue();
+        document.getElementById("outputContent").textContent = code;
+    });
+
+    // 初始不檢查
+    editor.session.clearAnnotations();
+</script>
+
+</body>
+</html>

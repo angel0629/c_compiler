@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2025-04-24 20:00:57
+-- 產生時間： 2025-04-30 08:33:18
 -- 伺服器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.2.12
 
@@ -40,7 +40,9 @@ CREATE TABLE `example` (
 
 INSERT INTO `example` (`id`, `Input`, `Output`, `q_id`) VALUES
 (1, 'world', 'hello, world', 1),
-(2, '5 10', '15', 1);
+(2, '5 10', '15', 2),
+(3, 'angel', 'hello, angel', 1),
+(4, '-1 -1', '-2', 2);
 
 -- --------------------------------------------------------
 
@@ -105,7 +107,11 @@ CREATE TABLE `test` (
 INSERT INTO `test` (`id`, `Input`, `Output`, `q_id`) VALUES
 (1, '123', 'hello, 123', 1),
 (2, '************', 'hello, ************', 1),
-(3, 'abc', 'hello, abc', 1);
+(3, 'abc', 'hello, abc', 1),
+(4, '5 10', '15', 2),
+(5, '123 123', '246', 2),
+(6, '11111 -11111', '0', 2),
+(7, '-1234 -1234', '-2468', 2);
 
 --
 -- 已傾印資料表的索引
@@ -143,7 +149,7 @@ ALTER TABLE `test`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `example`
 --
 ALTER TABLE `example`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `lable`
@@ -161,7 +167,7 @@ ALTER TABLE `questions`
 -- 使用資料表自動遞增(AUTO_INCREMENT) `test`
 --
 ALTER TABLE `test`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

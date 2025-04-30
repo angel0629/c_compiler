@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C 語言線上編譯器</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+  <style>
+    body {
+      background-color: #f8f9fa;
+      color: #333;
+      font-family: "Arial", sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow-x: hidden;
+    }
+    .header {
+      text-align: center;
+      padding: 0px;
+      position: relative;
+      background-color: #4a90e2;
+      color: white;
+      border-bottom: 2px solid #7db8f1;
+    }
+    .button-row {
+      background-color: #e9ecef;
+      padding: 5px 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .execute-button, .submit-button {
+      border-radius: 10px;
+      padding: 0px 10px;
+      font-size: 15px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+    }
+    .execute-button {
+      background-color: #7db8f1;
+    }
+    .submit-button {
+      background-color: #fd79a8;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .main-container {
+      display: flex;
+      flex: 1;
+      padding: 15px;
+      gap: 0;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    #question-box {
+      width: 35%;
+      min-width: 150px;
+      max-width: 70%;
+      padding: 15px;
+      border-radius: 10px;
+      background-color: #ffffff;
+      height: 100%;
+      overflow-y: auto;
+      box-sizing: border-box;
+      position: relative;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+    #question-box h3 {
+      position: absolute;
+      top: 5px;
+      left: 15px;
+      margin-top: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #4a90e2;
+    }
+    .right-side {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      gap: 20px;
+      box-sizing: border-box;
+      padding-left: 20px;
+    }
+    #editor-container {
+      width: 100%;
+      height: calc(50vh - 20px);
+      overflow: hidden; /* important */
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      position: relative;
+      box-sizing: border-box;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    #editor {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 10px;
+    }
+    #output-container {
+      width: 100%;
+      min-height: 240px;
+      max-height: 60vh;
+      border-top: 1px solid #ddd;
+      background-color: #ffffff;
+      padding: 20px;
+      resize: vertical;
+      position: relative;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      box-sizing: border-box;
+    }
+    #output-container h3 {
+      position: absolute;
+      top: 5px;
+      left: 15px;
+      margin-top: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: #4a90e2;
+    }
+    #output {
+      width: 100%;
+      max-height: 100%;
+      color: #333;
+      white-space: pre-wrap;
+      text-align: left;
+      margin-top: 30px;
+      overflow-y: auto;
+    }
+
+    /* Chat button styles */
+    .chat-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      background-color: #ffffff;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .chat-button:hover {
+      background-color: #3578e5;
+    }
+
+    /* Chat box sliding animation */
+    .chat-box {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 400px;
+      height: 100%;
+      background-color: #ffffff;
+      box-shadow: -4px 0px 10px rgba(0, 0, 0, 0.1);
+      transition: right 0.3s ease;
+      z-index: 1000;
+      box-sizing: border-box;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-box.active {
+      right: 0;
+    }
+    .close-chat {
+      align-self: flex-start;
+      font-size: 20px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>C 語言線上編譯器</h1>
+  </div>
+
+  <div class="button-row">
+    <button class="execute-button" onclick="runCode()">執行程式</button>
+    <button class="submit-button" onclick="submitAnswer()">送出解答</button>
+  </div>
+
+  <div class="main-container">
+    <div id="question-box">
+        <div class="left-problem">
+            <h4>題目描述</h4>
+            <script>
+                // 取得 URL 中的參數
+                const urlParams = new URLSearchParams(window.location.search);
+                const q_id = urlParams.get('q_id');
+            
+                async function fetchProblem() {
+                    const res = await fetch(`/api/problem/${q_id}`);
+                    const data = await res.json();
+
+                    document.getElementById('info').textContent = data.problem.info;
+                    document.getElementById('input_info').textContent = data.problem.Input_info;
+                    document.getElementById('output_info').textContent = data.problem.Output_info;
+                    console.log('q_id:', q_id); // 如果是 null 就代表網址沒帶參數
+                    
+
+                    //範例輸入輸出
+                    const tbody = document.getElementById('show_info_list');
+                    data.example.forEach(i => {
+                    const tr = document.createElement('tr');
+        
+                    // 範例輸入
+                    const In_example = document.createElement('td');
+                    In_example.textContent = i.Input;
+        
+                    // 範例輸出
+                    const Out_example = document.createElement('td');
+                    Out_example.textContent = i.Output;
+        
+                    // 組合這列
+                    tr.appendChild(In_example);
+                    tr.appendChild(Out_example);
+        
+                    // 加進 tbody
+                    tbody.appendChild(tr);
+                    });
+                }
+                fetchProblem();
+            </script>
+            <table>
+                <tr>
+                    <th>內容</th>
+                </tr>
+                <tr>
+                    <td id="info">
+                    </td>
+                </tr>
+            </table>
+            <br>
+            <table>
+                <tr>
+                    <th>輸入</th>
+                    <th>輸出</th>
+                </tr>
+                <tr>
+                    <td id="input_info">
+                    </td>
+                    <td id="output_info">
+                    </td>
+                </tr>
+            </table>
+            <br>
+            <table  border="1">
+                <thead>
+                    <th>範例輸入</th>
+                    <th>範例輸出</th>
+                </thead>
+                <tbody id="show_info_list">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="right-side">
+      <div id="editor-container">
+        <div id="editor"><textarea id="codeInput"></textarea></div>
+      </div>
+
+      <div id="output-container">
+        <h3>輸出結果：</h3>
+        <div id="output"><pre id="judge_output"></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat button -->
+  <div class="chat-button" onclick="toggleChatBox()">💬</div>
+
+  <!-- Chat box -->
+  <div class="chat-box" id="chat-box">
+    <div class="close-chat" onclick="closeChatBox()">✖</div>
+    <p>Chat feature is coming soon!</p>
+  </div>
+
+<script>
+  var editor = ace.edit("editor");
+  editor.setTheme("ace/theme/chrome");
+  editor.session.setMode("ace/mode/c_cpp");
+
+  // Make scrolling smoother and always visible
+  editor.setOptions({
+    vScrollBarAlwaysVisible: true,
+    scrollPastEnd: 0.5,
+    animatedScroll: true
+  });
+
+  // Always scroll to the cursor when typing next line
+  editor.session.on('change', function(delta) {
+    editor.renderer.scrollCursorIntoView({ padding: 20 });
+  });
+
+  let userInputs = [];
+  let expectedInputs = [];
+  let outputDiv = document.getElementById("output");
+  let waitingForInput = false;
+  let currentInputIndex = 0;
+
+  async function runCode() {
+    const code = editor.getValue();
+    userInputs = [];
+    expectedInputs = [];
+    outputDiv.innerHTML = "";
+
+    const printfRegex = /printf\(["']([^"']+)["']\);/g;
+    const scanfRegex = /scanf\(["'][^"']*["'],\s*&?\w+\)/g;
+
+    let printfMatches = [];
+    let match;
+
+    while ((match = printfRegex.exec(code)) !== null) {
+      printfMatches.push(match[1]);
+    }
+
+    let scanfMatches = code.match(scanfRegex);
+    if (scanfMatches) {
+      for (let i = 0; i < scanfMatches.length; i++) {
+        let promptText = printfMatches[i] || `請輸入第 ${i + 1} 個輸入值：`;
+        let lineDiv = document.createElement("div");
+        lineDiv.innerHTML = promptText + " <span contenteditable='true' class='user-input' onkeypress='handleUserInput(event, this)'></span>";
+        outputDiv.appendChild(lineDiv);
+        expectedInputs.push(lineDiv.querySelector(".user-input"));
+      }
+      waitingForInput = true;
+      expectedInputs[0].focus();
+    }
+  }
+
+  function handleUserInput(event, inputElement) {
+    if (event.key === "Enter" && waitingForInput) {
+      event.preventDefault();
+      userInputs.push(inputElement.innerText.trim());
+      inputElement.contentEditable = "false";
+      currentInputIndex++;
+
+      if (currentInputIndex < expectedInputs.length) {
+        expectedInputs[currentInputIndex].focus();
+      } else {
+        waitingForInput = false;
+        sendCodeToCompiler();
+      }
+    }
+  }
+  
+  function toggleChatBox() {
+    const chatBox = document.getElementById("chat-box");
+    chatBox.classList.toggle("active");
+  }
+
+  function closeChatBox() {
+    const chatBox = document.getElementById("chat-box");
+    chatBox.classList.remove("active");
+  }
+
+  async function sendCodeToCompiler() {
+    outputDiv.innerHTML += "<br>執行中...<br>";
+  }
+  // Allow resizing of question box (drag right border)
+  let isDragging = false;
+  const questionBox = document.getElementById('question-box');
+  questionBox.addEventListener('mousemove', (e) => {
+    if (e.offsetX >= questionBox.offsetWidth - 10) {
+      questionBox.style.cursor = 'ew-resize';
+    } else {
+      questionBox.style.cursor = 'default';
+    }
+  });
+  questionBox.addEventListener('mousedown', (e) => {
+    if (e.offsetX >= questionBox.offsetWidth - 10) {
+      isDragging = true;
+      document.body.style.cursor = 'ew-resize';
+    }
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const containerLeft = document.querySelector('.main-container').offsetLeft;
+    const newWidth = e.clientX - containerLeft;
+    const minWidth = 150;
+    const maxWidth = window.innerWidth * 0.7;
+    if (newWidth >= minWidth && newWidth <= maxWidth) {
+      questionBox.style.width = `${newWidth}px`;
+    }
+  });
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+    document.body.style.cursor = 'default';
+  });
+
+  // Allow resizing of output container (drag top border)
+  let isDraggingOutputTop = false;
+  const outputContainer = document.getElementById('output-container');
+  outputContainer.addEventListener('mousemove', (e) => {
+    if (e.offsetY <= 10) {
+      outputContainer.style.cursor = 'ns-resize';
+    } else {
+      outputContainer.style.cursor = 'default';
+    }
+  });
+  outputContainer.addEventListener('mousedown', (e) => {
+    if (e.offsetY <= 10) {
+      isDraggingOutputTop = true;
+      document.body.style.cursor = 'ns-resize';
+    }
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!isDraggingOutputTop) return;
+    const newHeight = outputContainer.offsetHeight - (e.clientY - outputContainer.offsetTop);
+    const minHeight = 100;
+    const maxHeight = window.innerHeight * 0.7;
+    if (newHeight >= minHeight && newHeight <= maxHeight) {
+      outputContainer.style.height = `${newHeight}px`;
+    }
+  });
+  window.addEventListener('mouseup', () => {
+    isDraggingOutputTop = false;
+    document.body.style.cursor = 'default';
+  });
+</script>
+<script>
+    async function submitAnswer() {
+        console.log("code");
+        const code = editor.getValue();
+        //const code = document.getElementById("codeInput"); // 刪掉 .value
+        console.log(code);
+        const response = await fetch("/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code,q_id })
+        });
+
+        const result = await response.json();
+        const outputElement = document.getElementById("judge_output");
+        outputElement.innerText = "";
+        outputElement.className = "";//清除背景顏色
+
+
+        if (result.error) {
+            outputElement.innerText = result.error;
+            return;
+        }
+        let allPassed = true;
+        result.results.forEach(({ input, expected, output, error }) => {
+            outputElement.innerText += `輸入: ${input}\n`;
+            outputElement.innerText += `正確輸出： ${expected}\n`;
+            outputElement.innerText += `實際輸出： ${output || "執行錯誤"}\n`;
+
+            if (error || output!== expected){
+                allPassed = false;
+            }
+
+            if (error) outputElement.innerText += `ERROR: ${error}\n`;
+            outputElement.innerText += "-------------------------\n";
+
+        });
+
+        if (allPassed) {
+            //outputElement.innerText += "\nJudge 通過 ✅";
+            const img = document.createElement("img");
+            img.src = "judge_success.jpg";
+            img.style.width = "150px"; // 自訂大小
+            outputElement.appendChild(img);
+            outputElement.classList.add("pass");
+        } else {
+        //outputElement.innerText += "\nJudge 沒通過 ❌";
+            const img = document.createElement("img");
+            img.src = "judge_failed.jpg";
+            img.style.width = "150px"; // 自訂大小
+            outputElement.appendChild(img);
+            outputElement.classList.add("fail");
+        }
+    }
+</script>
+</body>
+</html>

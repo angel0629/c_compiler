@@ -40,8 +40,8 @@ app.get("/problem_list", (req, res) => {
 });
 
 //寫程式的頁面
-app.get("/code_judge", (req, res) => {
-    res.sendFile(path.join(__dirname, "views", "code_judge.html"));
+app.get("/code_judge_final", (req, res) => {
+    res.sendFile(path.join(__dirname, "views", "code_judge_final.html"));
 });
 app.get("/api/problem/:id", async (req, res) => {
     const q_id = req.params.id;

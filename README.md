@@ -15,3 +15,4 @@ c_compiler/
 ├── backend/
 │   ├── app.py                   # 主要進入點
 │   └── ...
+├── db.sql                      # 放題目資料庫

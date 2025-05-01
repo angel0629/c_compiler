@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: c-learning-app
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: root123
+      DB_NAME: judge_questions
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: c-learning-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: judge_questions
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./judge_questions.sql:/docker-entrypoint-initdb.d/judge_questions.sql
+
+volumes:
+  db_data:

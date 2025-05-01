@@ -1,13 +1,19 @@
+// const mysql = require('mysql2');
+
+// const pool = mysql.createPool({
+//   host: 'localhost',
+//   port:'3306',
+//   user: 'root',
+//   password: '',
+//   database: 'judge_questions'
+// });
 const mysql = require('mysql2');
-
 const pool = mysql.createPool({
-  host: 'localhost',
-  port:'3306',
-  user: 'root',
-  password: '',
-  database: 'judge_questions'
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'judge_questions'
 });
-
 // 用 promise 包裝（可以用 async/await）
 const promisePool = pool.promise();
 

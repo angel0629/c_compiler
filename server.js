@@ -36,7 +36,7 @@ app.get("/api/problem_data", async (req, res) => {
 
 // 提供 HTML 頁面
 app.get("/problem_list", (req, res) => {
-    res.sendFile(path.join(__dirname, "views", "problem_list.html"));
+    res.sendFile(path.join(__dirname, "views", "questions.html"));
 });
 
 //寫程式的頁面

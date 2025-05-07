@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>C 語言線上編譯器</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+  <style>
+    body {
+      background-color: #f8f9fa;
+      color: #333;
+      font-family: "Arial", sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .header {
+      text-align: center;
+      padding: 0px;
+      position: relative;
+      background-color: #4a90e2;
+      color: white;
+      border-bottom: 2px solid #7db8f1;
+    }
+
+    .button-row {
+      background-color: #e9ecef;
+      padding: 5px 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .signin-button {
+      border-radius: 10px;
+      padding: 0px 10px;
+      font-size: 15px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+      background-color: #ffffff;
+    }
+
+    .question-section {
+      padding: 20px;
+      flex: 1;
+    }
+
+    .question-section h2 {
+      color: #000000;
+      margin-bottom: 10px;
+    }
+
+    .question-list {
+      list-style-type: decimal;
+      padding-left: 20px;
+    }
+
+    .question-list li {
+      margin-bottom: 10px;
+      cursor: pointer;
+      color: #000000;
+    }
+
+    .question-list li:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <h1>C 語言線上編譯器</h1>
+  </div>
+
+  <div class="button-row">
+    <button class="signin-button" onclick="runCode()">登入</button>
+  </div>
+
+  <div class="question-section">
+    <h2>請選擇一個題目：</h2>
+    <table  border="1">
+      <thead>
+          <th>題號</th>
+          <th>標題</th>
+          <th></th>
+      </thead>
+      <tbody id="show_list">
+      </tbody>
+  </table>
+  <script src="/judge.js"></script>
+  </div>
+
+  <script>
+    function runCode() {
+      alert("尚未連接登入功能");
+    }
+
+    function selectQuestion(id) {
+      // Redirect to the compiler page with the question ID
+      window.location.href = "/code_judge_final?q_id=" + id;
+    }
+
+  </script>
+
+</body>
+</html>

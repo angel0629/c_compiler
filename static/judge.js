@@ -88,7 +88,7 @@ async function submitAnswer() {
     });
 
     const result = await response.json();
-    const outputElement = document.getElementById("judge_output");
+    const outputElement = document.getElementById("output");
     outputElement.innerText = "";
     outputElement.className = "";//清除背景顏色
 

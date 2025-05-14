@@ -2,10 +2,23 @@
 async function fetchProblems() {
     const res = await fetch('/api/problem_data'); // 從後端 API 抓資料
     const data = await res.json();
-
+    function selectQuestion(id) {
+        window.location.href = "/code_judge_final?q_id=" + id;
+      }
     const tbody = document.getElementById('show_list');
 
     data.forEach(problem => {
+        const item = document.createElement("div");
+        item.className = "question-item";
+        item.onclick = () => selectQuestion(problem.no);
+        item.innerHTML = `
+          <div class="question-id">#${problem.no}</div>
+          <div class="question-title">${problem.name}</div>
+        `;
+        tbody.appendChild(item);
+        
+        /*
+        /Users/carissamarwies/Documents/sourcetree/static/judge.js
         const tr = document.createElement('tr');
 
         // 題號
@@ -31,10 +44,39 @@ async function fetchProblems() {
 
         // 加進 tbody
         tbody.appendChild(tr);
+        */
     });
 }
 fetchProblems();
 
+/*
+function runCode() {
+    alert("尚未連接登入功能");
+  }
+
+  function selectQuestion(id) {
+    window.location.href = "/code_judge_final?q_id=" + id;
+  }
+
+  // 示例用題目，可由 judge.js 替換
+  const sampleQuestions = [
+    { id: 1, title: "Hello World 程式" },
+    { id: 2, title: "計算兩數之和" },
+    { id: 3, title: "判斷質數" }
+  ];
+
+  const showList = document.getElementById("show_list");
+  sampleQuestions.forEach(q => {
+    const item = document.createElement("div");
+    item.className = "question-item";
+    item.onclick = () => selectQuestion(q.id);
+    item.innerHTML = `
+      <div class="question-id">#${q.id}</div>
+      <div class="question-title">${q.title}</div>
+    `;
+    showList.appendChild(item);
+  });
+*/
 
 // 以 q_id 抓題目資料
 // 取得 URL 中的參數

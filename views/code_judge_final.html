@@ -6,6 +6,7 @@
   <title>C 語言線上編譯器</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="chat.css">
 </head>
 <body>
   <div class="header">
@@ -25,8 +26,7 @@
                     <th>內容</th>
                 </tr>
                 <tr>
-                    <td id="info">
-                    </td>
+                    <td id="info"></td>
                 </tr>
             </table>
             <br>
@@ -36,20 +36,17 @@
                     <th>輸出</th>
                 </tr>
                 <tr>
-                    <td id="input_info">
-                    </td>
-                    <td id="output_info">
-                    </td>
+                    <td id="input_info"></td>
+                    <td id="output_info"></td>
                 </tr>
             </table>
             <br>
-            <table  border="1">
+            <table border="1">
                 <thead>
                     <th>範例輸入</th>
                     <th>範例輸出</th>
                 </thead>
-                <tbody id="show_info_list">
-                </tbody>
+                <tbody id="show_info_list"></tbody>
             </table>
         </div>
     </div>
@@ -71,11 +68,20 @@
 
   <!-- Chat box -->
   <div class="chat-box" id="chat-box">
-    <div class="close-chat" onclick="closeChatBox()">✖</div>
-    <p>Chat feature is coming soon!</p>
+    <div class="chat-header">
+      AI 聊天室 <span class="close-chat" onclick="closeChatBox()">✖</span>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="bot-message">你好，有什麼可以幫助的嗎？</div>
+    </div>
+    <div class="chat-input">
+      <input type="text" id="userInput" placeholder="請輸入問題...">
+      <button onclick="sendMessage()">送出</button>
+    </div>
   </div>
 
 <script src="/compile_style.js"></script>
 <script src="/judge.js"></script>
+<script src="chat.js"></script>
 </body>
 </html>

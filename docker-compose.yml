@@ -17,6 +17,7 @@ services:
       DB_NAME: ${DB_NAME}
     depends_on:
       - db
+      - chatbot
 
   db:
     image: mysql:8.0
@@ -32,6 +33,17 @@ services:
     volumes:
       - db_data:/var/lib/mysql
       - ./judge_questions.sql:/docker-entrypoint-initdb.d/judge_questions.sql
-
+  chatbot:
+    build:
+      context: ./chatbot
+      dockerfile: Dockerfile
+    container_name: c-learning-chatbot
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      
 volumes:
   db_data:

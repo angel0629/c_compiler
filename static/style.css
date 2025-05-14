@@ -74,6 +74,65 @@ button:hover {
   font-weight: 600;
   color: #4a90e2;
 }
+.section-title {
+  position: absolute;
+  top: 5px;
+  left: 15px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #4a90e2;
+  border-bottom: 2px solid #4a90e2;
+  padding-bottom: 4px;
+  margin: 0;
+  width: calc(100% - 30px);
+}
+
+#question-box {
+  padding-top: 40px; /* adjust for title spacing */
+}
+
+.section-block {
+  margin-bottom: 10px;
+}
+
+.section-block h4 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 6px;
+  border-left: 4px solid #4a90e2;
+  padding-left: 8px;
+  margin-top: 10px;
+}
+
+.text-block {
+  background-color: #f1f3f5;
+  padding: 8px 12px;
+  border-radius: 6px;
+  line-height: 1.5;
+  font-size: 15px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.example-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.example-table th,
+.example-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.example-table th {
+  background-color: #f1f3f5;
+  color: #333;
+}
+
 .right-side {
   display: flex;
   flex-direction: column;
@@ -118,7 +177,7 @@ button:hover {
   top: 5px;
   left: 15px;
   margin-top: 0;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   color: #4a90e2;
 }

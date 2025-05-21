@@ -5,6 +5,21 @@ editor.setValue(`#include<stdio.h>\n#include<stdlib.h>\n\nint main(){\n    int a
 editor.clearSelection();
 editor.setFontSize(14);
 
+let debounceTimer;
+editor.session.on('change', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+        const code = editor.getValue();
+        runSyntaxCheck(code);  // 這函式等一下要定義
+    }, 500);
+});
+editor.session.setAnnotations([{
+  row: 2,
+  column: 5,
+  text: "測試錯誤：這裡有問題",
+  type: "error"
+}]);
+
 let userInputs = [];
 let expectedInputs = [];
 let outputDiv = document.getElementById("output");
@@ -143,3 +158,47 @@ async function sendCodeToCompiler() {
 
     outputDiv.innerHTML += cleanOutput || "無輸出";
 }
+
+async function checkSyntaxErrors(code) {
+    const response = await fetch("https://emkc.org/api/v2/piston/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            language: "c",
+            version: "*",
+            args: ["-fsyntax-only"],
+            files: [{ name: "main.c", content: code }]
+        })
+    });
+
+    const result = await response.json();
+    // 🟡 有時錯誤會在 run.stderr
+    return (result.compile?.stderr || result.run?.stderr || "");
+}
+
+
+async function runSyntaxCheck(code) {
+    const errorText = await checkSyntaxErrors(code);
+    const annotations = [];
+
+    const lines = errorText.split('\n');
+    for (const line of lines) {
+        const match = line.match(/main\.c:(\d+):(\d+):\s+error:\s+(.*)/);
+        if (match) {
+            const lineNumber = parseInt(match[1], 10) - 1;
+            const column = parseInt(match[2], 10) - 1;
+            const message = match[3];
+
+            annotations.push({
+                row: lineNumber,
+                column: column,
+                text: message,
+                type: "error"
+            });
+        }
+    }
+
+    editor.session.setAnnotations(annotations);
+}
+
+

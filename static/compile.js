@@ -20,33 +20,42 @@ let currentInputIndex = 0;
 
 async function runCode() {
   const code = editor.getValue();
-  userInputs = [];
-  expectedInputs = [];
-  outputDiv.innerHTML = "";
 
-  const printfRegex = /printf\(["']([^"']+)["']\);/g;
-  const scanfRegex = /scanf\(["'][^"']*["'],\s*&?\w+\)/g;
+  // 讓使用者輸入 stdin（可以多行）
+  const input = prompt("請輸入程式所需輸入：") || "";
 
-  let printfMatches = [];
-  let match;
+  const outputArea = document.getElementById("output");
+  outputArea.addEventListener("click",() =>{
+    document.getElementById('stdin').focus
+  })
+  outputArea.innerText = "執行中...\n";
 
-  while ((match = printfRegex.exec(code)) !== null) {
-    printfMatches.push(match[1]);
-  }
+  const response = await fetch("https://emkc.org/api/v2/piston/execute", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      language: "c",
+      version: "*",
+      stdin: input,
+      files: [
+        {
+          name: "main.c",
+          content: code
+        }
+      ]
+    })
+  });
 
-  let scanfMatches = code.match(scanfRegex);
-  if (scanfMatches) {
-    for (let i = 0; i < scanfMatches.length; i++) {
-      let promptText = printfMatches[i] || `請輸入第 ${i + 1} 個輸入值：`;
-      let lineDiv = document.createElement("div");
-      lineDiv.innerHTML = promptText + " <span contenteditable='true' class='user-input' onkeypress='handleUserInput(event, this)'></span>";
-      outputDiv.appendChild(lineDiv);
-      expectedInputs.push(lineDiv.querySelector(".user-input"));
-    }
-    waitingForInput = true;
-    expectedInputs[0].focus();
-  }
+  const result = await response.json();
+  let cleanOutput = "";
+
+  if (result.run?.stdout) cleanOutput += result.run.stdout;
+  if (result.run?.stderr) cleanOutput += result.run.stderr;
+  if (result.compile?.stderr) cleanOutput += result.compile.stderr;
+
+  outputArea.innerText = cleanOutput || "無輸出";
 }
+
 
 function handleUserInput(event, inputElement) {
   if (event.key === "Enter" && waitingForInput) {
@@ -74,9 +83,6 @@ function closeChatBox() {
   chatBox.classList.remove("active");
 }
 
-async function sendCodeToCompiler() {
-  outputDiv.innerHTML += "<br>執行中...<br>";
-}
 
 let isDragging = false;
 const questionBox = document.getElementById('question-box');

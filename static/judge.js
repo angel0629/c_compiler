@@ -2,35 +2,21 @@
 async function fetchProblems() {
     const res = await fetch('/api/problem_data'); // 從後端 API 抓資料
     const data = await res.json();
-
+    function selectQuestion(id) {
+        window.location.href = "/code_judge_final?q_id=" + id;
+      }
     const tbody = document.getElementById('show_list');
 
     data.forEach(problem => {
-        const tr = document.createElement('tr');
-
-        // 題號
-        const tdNo = document.createElement('td');
-        tdNo.textContent = problem.no;
-
-        // 標題
-        const tdTitle = document.createElement('td');
-        tdTitle.textContent = problem.name;
-
-        // 按鈕／超連結
-        const tdLink = document.createElement('td');
-        const a = document.createElement('a');
-        a.href = `/code_judge_final?q_id=${problem.id}`;
-        a.textContent = '答題';
-        a.classList.add('btn'); // optional: 給按鈕樣式
-        tdLink.appendChild(a);
-
-        // 組合這列
-        tr.appendChild(tdNo);
-        tr.appendChild(tdTitle);
-        tr.appendChild(tdLink);
-
-        // 加進 tbody
-        tbody.appendChild(tr);
+        const item = document.createElement("div");
+        item.className = "question-item";
+        item.onclick = () => selectQuestion(problem.no);
+        item.innerHTML = `
+          <div class="question-id">#${problem.no}</div>
+          <div class="question-title">${problem.name}</div>
+        `;
+        tbody.appendChild(item);
+        
     });
 }
 fetchProblems();

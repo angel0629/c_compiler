@@ -17,6 +17,7 @@ c_compiler/
 │   └── ...
 ├── db.sql                      # 放題目資料庫
 ```
+## 這裡是測試用環境
 **Docker 小筆記**
 - 下載 Docker：https://www.docker.com/products/docker-desktop/
 - 執行(在目標專案資料夾中開啟 CMD)：`docker-compose up --build`

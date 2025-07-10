@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>C語言線上AI互動學習平台</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+  <style>
+    body {
+      background-color: #f8f9fa;
+      color: #333;
+      font-family: "Arial", sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .header {
+      text-align: center;
+      padding: 0px;
+      position: relative;
+      background-color: #4a90e2;
+      color: white;
+      border-bottom: 2px solid #7db8f1;
+    }
+
+    .button-row {
+      background-color: #e9ecef;
+      padding: 5px 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .signin-button {
+      border-radius: 10px;
+      padding: 0px 10px;
+      font-size: 15px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.3s ease;
+      background-color: #ffffff;
+    }
+
+    .question-section {
+      padding: 20px;
+      flex: 1;
+    }
+
+    .question-section h2 {
+      color: #000000;
+      margin-bottom: 20px;
+    }
+
+    .question-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .question-item {
+      display: flex;
+      align-items: center;
+      background-color: #ffffff;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .question-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+    }
+
+    .question-id {
+      font-weight: bold;
+      color: #4a90e2;
+      width: 60px;
+    }
+
+    .question-title {
+      flex-grow: 1;
+      padding: 0 10px;
+      color: #333;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <h1>C語言線上AI互動學習平台</h1>
+  </div>
+
+  <div class="button-row">
+    <button class="signin-button" onclick="runCode()">登入</button>
+  </div>
+
+  <div class="question-section">
+    <h2>請選擇一個題目：</h2>
+    <div class="question-list" id="show_list">
+      <!-- 題目將由 judge.js 載入 -->
+    </div>
+  </div>
+
+  <!--<script>
+    function runCode() {
+      alert("尚未連接登入功能");
+    }
+
+    function selectQuestion(id) {
+      window.location.href = "/code_judge_final?q_id=" + id;
+    }
+
+    // 示例用題目，可由 judge.js 替換
+    const sampleQuestions = [
+      { id: 1, title: "Hello World 程式" },
+      { id: 2, title: "計算兩數之和" },
+      { id: 3, title: "判斷質數" }
+    ];
+
+    const showList = document.getElementById("show_list");
+    sampleQuestions.forEach(q => {
+      const item = document.createElement("div");
+      item.className = "question-item";
+      item.onclick = () => selectQuestion(q.id);
+      item.innerHTML = `
+        <div class="question-id">#${q.id}</div>
+        <div class="question-title">${q.title}</div>
+      `;
+      showList.appendChild(item);
+    });
+  </script>
+-->
+
+  <script src="/judge.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C 語言線上編譯器</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="chatbot_style.css">
+
+</head>
+<body>
+  <div class="header">
+    <h1>C 語言線上編譯器</h1>
+  </div>
+
+  <div class="button-row">
+    <button class="execute-button" onclick="runCode()">執行程式</button>
+    <button class="submit-button" onclick="submitAnswer()">送出解答</button>
+  </div>
+  <div class="main-container">
+    <div id="question-box">
+      <h2 class="section-title">題目描述</h2>
+    
+      <div class="section-block">
+        <h4>內容說明</h4>
+        <p id="info" class="text-block"></p>
+      </div>
+    
+      <div class="section-block">
+        <h4>輸入說明</h4>
+        <p id="input_info" class="text-block"></p>
+      </div>
+    
+      <div class="section-block">
+        <h4>輸出說明</h4>
+        <p id="output_info" class="text-block"></p>
+      </div>
+    
+      <div class="section-block">
+        <h4>範例測資</h4>
+        <table class="example-table">
+          <thead>
+            <tr>
+              <th>範例輸入</th>
+              <th>範例輸出</th>
+            </tr>
+          </thead>
+          <tbody id="show_info_list">
+            <!-- 範例資料載入位置 -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="right-side">
+      <div id="editor-container">
+        <div id="editor"><textarea id="codeInput"></textarea></div>
+      </div>
+
+      <div id="output-container">
+        <h3>輸出結果：</h3>
+        <div id="output"><pre id="judge_output"></pre></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat button -->
+  <div class="chat-button" onclick="toggleChatBox()">💬</div>
+
+  <!-- Chat box -->
+  <div class="chat-box" id="chat-box">
+    <div class="chat-header">
+      AI 聊天室 <span class="close-chat" onclick="closeChatBox()">✖</span>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="bot-message">你好，有什麼可以幫助的嗎？</div>
+    </div>
+    <div class="chat-input">
+      <input type="text" id="userInput" placeholder="請輸入問題...">
+      <button onclick="sendMessage()">送出</button>
+    </div>
+  </div>
+
+<script src="/compile_style.js"></script>
+<script src="/judge.js"></script>
+<script src="/chat.js"></script>
+</body>
+</html>

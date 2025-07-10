@@ -2,9 +2,9 @@
 #include<stdlib.h>
 
 int main(){
-    char ch[100];
-    //printf("your input:");
-    scanf("%s",ch);
-    printf("hello, %s",ch);
+    char a[300];
+    // printf("輸入:");
+    scanf("%s",&a);
+    printf("hello, %s",a);
     return 0;
 }

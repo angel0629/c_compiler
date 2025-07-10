@@ -53,6 +53,7 @@ async function runCode() {
   if (result.run?.stderr) cleanOutput += result.run.stderr;
   if (result.compile?.stderr) cleanOutput += result.compile.stderr;
 
+
   outputArea.innerText = cleanOutput || "無輸出";
 }
 

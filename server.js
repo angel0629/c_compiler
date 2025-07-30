@@ -1,4 +1,4 @@
-require('dotenv').config(); // 一定要放最前面，先載入環境變數
+// require('dotenv').config(); // 一定要放最前面，先載入環境變數
 
 const express = require("express");
 const db = require('./db'); // db.js 的檔案
@@ -6,13 +6,13 @@ const fs = require("fs");
 const { exec } = require("child_process");
 const path = require("path");
 
-const { Configuration, OpenAIApi } = require('openai');
-const cors = require('cors');
+// const { Configuration, OpenAIApi } = require('openai');
+// const cors = require('cors');
 
 const app = express();
 const PORT = 3000;
 
-app.use(cors()); // 啟用跨域
+// app.use(cors()); // 啟用跨域
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "static")));
 
@@ -176,22 +176,22 @@ app.post("/submit", async (req, res) => {
   });
 });
 
-// ChatGPT 小助手路由
-app.post('/gpt', async (req, res) => {
-  try {
-    const { messages } = req.body;
-    const completion = await openai.createChatCompletion({
-      model: 'gpt-4',
-      messages,
-      temperature : 0.7
-    });
-    const reply = completion.data.choices[0].message.content;
-    res.json({ reply });
-  } catch (error) {
-    console.error('OpenAI API error:', error);
-    res.status(500).json({ reply: '伺服器錯誤，請稍後再試。' });
-  }
-});
+// // ChatGPT 小助手路由
+// app.post('/gpt', async (req, res) => {
+//   try {
+//     const { messages } = req.body;
+//     const completion = await openai.createChatCompletion({
+//       model: 'gpt-4',
+//       messages,
+//       temperature : 0.7
+//     });
+//     const reply = completion.data.choices[0].message.content;
+//     res.json({ reply });
+//   } catch (error) {
+//     console.error('OpenAI API error:', error);
+//     res.status(500).json({ reply: '伺服器錯誤，請稍後再試。' });
+//   }
+// });
 
 // 啟動伺服器
 app.listen(PORT, () => {

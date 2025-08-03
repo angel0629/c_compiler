@@ -1,10 +1,3 @@
-async function login(){
-    console.log("btn clicked")
-    const res = await fetch('/login_page'); 
-    console.log(res)
-    window.location.href = res.url
-}
-
 document.getElementById("loginForm").addEventListener("submit",async function(e) {
     e.preventDefault(); // 防止表單自動送出
   
@@ -31,13 +24,4 @@ document.getElementById("loginForm").addEventListener("submit",async function(e)
     });
 
 
-async function checkLoginStatus() {
-  const res = await fetch("/me");
-  const data = await res.json();
 
-  if (data.loggedIn) {
-    alert(`你好 ${data.user.usrname}（身分：${data.user.usr_group}）`);
-  } else {
-    alert("目前尚未登入");
-  }
-}

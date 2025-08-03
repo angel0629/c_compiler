@@ -27,6 +27,11 @@
       border-bottom: 2px solid #7db8f1;
     }
 
+    .headerBTN{
+      display: flex;
+      flex-direction: row;
+    }
+
     .button-row {
       background-color: #e9ecef;
       padding: 5px 20px;
@@ -88,6 +93,8 @@
       padding: 0 10px;
       color: #333;
     }
+
+    
   </style>
 </head>
 
@@ -95,11 +102,18 @@
 
   <div class="header">
     <h1>C語言線上AI互動學習平台</h1>
+    <div class="headerBTN">
+      <button>home</button>
+      <button class="usr-info" onclick="check_usr_info()">user_info</button>
+    </div>
   </div>
 
   <div class="button-row">
-    <button class="signin-button" onclick="login()">登入</button>
+    
+    <button class="signin-button">登入</button>
   </div>
+
+  
 
   <div class="question-section">
     <h2>請選擇一個題目：</h2>
@@ -140,6 +154,7 @@
 
   <script src="/judge.js"></script>
   <script src="/login.js"></script>
+  <script src="/button.js"></script>
 
 </body>
 </html>

@@ -17,6 +17,11 @@ app.use(session({
     saveUninitialized: true,
     cookie: { secure: false }
   }));
+
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+  
+
 /*
 // 原本的測試資料
 const testCases = [
@@ -31,6 +36,12 @@ app.get("/", (req, res) => {
     res.redirect("/problem_list");
 });
 
+app.get("/user_info", (req, res)=> {
+    const user = req.session.user;
+    res.render("user_info", { user });
+});
+
+// 登入功能
 app.get("/login_page", (req, res)=> {
     res.sendFile(path.join(__dirname, "views", "login.html"));
 });
@@ -75,6 +86,7 @@ app.post("/api/login", async (req, res) => {
     res.json({ success: true });
   });
 
+  
 
 //題目的 list
 // 提供前端資料 API

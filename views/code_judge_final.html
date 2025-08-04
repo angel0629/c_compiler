@@ -61,17 +61,22 @@
       </div>
     </div>
   </div>
+  <!-- GAI 小助手 -->
   <div class="chat-button" onclick="toggleChatBox()">💬</div>
   <div class="chat-box" id="chat-box">
+      <div class="resize-handle"></div>
     <div class="chat-header">
       <div class="chat-header-title">GAI 小助手</div>
       <span class="close-chat" onclick="closeChatBox()">✖</span>
     </div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-input">
-      <input type="text" id="userInput" placeholder="請輸入問題...">
-      <button onclick="sendMessage()">送出</button>
+    <div class="chat-content">
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input">
+        <textarea id="userInput" placeholder="請輸入問題..."></textarea>
+        <button onclick="sendMessage()">送出</button>
+      </div>
     </div>
+  </div>
   </div>
   <script src="/compile_style.js"></script>
   <script src="/judge.js"></script>

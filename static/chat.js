@@ -1,3 +1,30 @@
+// GAI 小助手的畫面大小
+const chatBox = document.getElementById('chat-box');
+const resizeHandle = chatBox.querySelector('.resize-handle');
+let isResizing = false;
+let startX, startWidth;
+
+resizeHandle.addEventListener('mousedown', function(e) {
+  isResizing = true;
+  startX = e.clientX;
+  startWidth = chatBox.offsetWidth;
+  document.body.style.userSelect = 'none';
+});
+
+document.addEventListener('mousemove', function(e) {
+  if (isResizing) {
+    const newWidth = startWidth + (startX - e.clientX);
+    if (newWidth >= 200 && newWidth <= window.innerWidth * 0.9) {
+      chatBox.style.width = newWidth + 'px';
+    }
+  }
+});
+
+document.addEventListener('mouseup', function() {
+  isResizing = false;
+  document.body.style.userSelect = '';
+});
+
 messages = [
   {
     role: "assistant",
@@ -68,23 +95,23 @@ async function sendMessage() {
     chatMessages.appendChild(botMsg);
 
     // 對程式碼塊應用 highlight.js 並添加複製按鈕
-    botMsg.querySelectorAll("pre").forEach((pre) => {
-      const codeBlock = pre.querySelector("code");
-      if (codeBlock) {
-        hljs.highlightElement(codeBlock);
-        const copyButton = document.createElement("button");
-        copyButton.textContent = "複製";
-        copyButton.className = "copy-button";
-        copyButton.onclick = () => {
-          navigator.clipboard.writeText(codeBlock.textContent);
-          copyButton.textContent = "已複製";
-          setTimeout(() => {
-            copyButton.textContent = "複製";
-          }, 2000);
-        };
-        pre.appendChild(copyButton);
-      }
-    });
+    // botMsg.querySelectorAll("pre").forEach((pre) => {
+    //   const codeBlock = pre.querySelector("code");
+    //   if (codeBlock) {
+    //     hljs.highlightElement(codeBlock);
+    //     const copyButton = document.createElement("button");
+    //     copyButton.textContent = "複製";
+    //     copyButton.className = "copy-button";
+    //     copyButton.onclick = () => {
+    //       navigator.clipboard.writeText(codeBlock.textContent);
+    //       copyButton.textContent = "已複製";
+    //       setTimeout(() => {
+    //         copyButton.textContent = "複製";
+    //       }, 2000);
+    //     };
+    //     pre.appendChild(copyButton);
+    //   }
+    // });
 
     // 僅在成功回應時將 AI 回覆加入歷史訊息
     messages.push({ role: "assistant", content: reply });

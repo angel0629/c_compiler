@@ -16,6 +16,17 @@
   display: block;
 }
 
+/*調整 GAI 小助手寬度*/
+.chat-box .resize-handle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 8px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 10;
+}
+
 .chat-header {
   background: #007bff;
   color: white;
@@ -37,33 +48,48 @@
   margin-left: 10px;
 }
 
+.chat-content {
+  display: flex;
+  flex-direction: column;
+  height: 90%; /* 或你想要的高度 */
+}
+
 /* 聊天訊息區域 */
 .chat-messages {
-  max-height: 350px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  flex: 8;
   padding: 10px;
   background: #f9f9f9;
   word-wrap: break-word; /* 確保文字換行 */
   /* 增加溢出控制，避免內容溢出 */
   overflow-x: hidden; /* 防止水平溢出 */
+  min-height: 0; /* 避免溢出 */
+  max-height: none;
+  overflow-y: auto;
+  font-size: 14px;
 }
 
 /* 使用者訊息 */
 .user-message {
+  display: flex;
+  flex-direction: column;
   margin: 8px;
   padding: 10px;
   background: #e0f7fa;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   max-width: 70%;
   align-self: flex-end;
   word-wrap: break-word;
   /* 增加溢出控制 */
   overflow-wrap: break-word; /* 支援長詞換行 */
-  overflow-x: auto; /* 長內容可水平滾動 */
 }
 
 /* AI 訊息 */
 .bot-message {
+  display: flex;
+  flex-direction: column;
   margin: 8px;
   padding: 10px;
   background: #ffffff;
@@ -74,8 +100,7 @@
   word-wrap: break-word; /* 確保文字換行 */
   overflow-wrap: break-word; /* 支援長詞換行 */
   /* 增加溢出控制 */
-  overflow-x: auto; /* 長內容可水平滾動 */
-  overflow-y: hidden; /* 防止垂直溢出 */
+  
 }
 
 /* 錯誤訊息 */
@@ -144,7 +169,7 @@
 }
 
 /* 複製按鈕 */
-.copy-button {
+/* .copy-button {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -154,26 +179,38 @@
   border: none;
   border-radius: 3px;
   cursor: pointer;
-  z-index: 1; /* 確保按鈕在上層 */
-}
+  z-index: 1;
+} */
 
-.copy-button:hover {
+/* .copy-button:hover {
   background: #45a049;
-}
+} */
 
 /* 聊天輸入框 */
 .chat-input {
+  flex: 2;
   display: flex;
   padding: 10px;
   border-top: 1px solid #ccc;
 }
 
-.chat-input input {
+/* .chat-input input {
   flex: 1;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
   margin-right: 10px;
+} */
+
+.chat-input textarea {
+  flex: 2;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-right: 10px;
+  font-size: 14px;
+  resize: vertical; /* 允許上下拉伸 */
+  overflow-y: auto; /* 支援垂直滾動 */
 }
 
 .chat-input button {

@@ -243,3 +243,8 @@ button:hover {
   background-color: rgba(255, 0, 0, 0.1);
   position: absolute;
 }
+
+.headerBTN{
+  display: flex;
+  flex-direction: row;
+}

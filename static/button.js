@@ -47,3 +47,8 @@ async function check_usr_info() {
   const res = await fetch('/user_info')
   window.location.href = res.url;
 }
+
+async function home_page(){
+  const res = await fetch('/home')
+  window.location.href = res.url;
+}

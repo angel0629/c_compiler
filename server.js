@@ -36,6 +36,10 @@ app.get("/", (req, res) => {
     res.redirect("/problem_list");
 });
 
+app.get('/home',(req,res) => {
+    res.redirect("/problem_list");
+});
+
 app.get("/user_info", (req, res)=> {
     const user = req.session.user;
     res.render("user_info", { user });

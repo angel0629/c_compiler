@@ -5,6 +5,7 @@
   <title>使用者資訊</title>
 </head>
 <body>
+  <button onclick="home_page()">home</button>
   <% if (user) { %>
     <h2>使用者資訊</h2>
     <p><strong>UID:</strong> <%= user.uid %></p>
@@ -14,4 +15,5 @@
     <p>尚未登入</p>
   <% } %>
 </body>
+<script src="/button.js"></script>
 </html>

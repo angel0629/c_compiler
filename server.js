@@ -1,13 +1,14 @@
-// require('dotenv').config(); // 一定要放最前面，先載入環境變數
-
+const { spawn } = require('child_process'); //
 const express = require("express");
 const db = require('./db'); // db.js 的檔案
 const fs = require("fs");
 const { exec } = require("child_process");
 const path = require("path");
 
-// const { Configuration, OpenAIApi } = require('openai');
-// const cors = require('cors');
+//compiler 測試
+const { WebSocketServer } = require('ws');
+const http = require('http');
+
 
 const app = express();
 const PORT = 3000;
@@ -176,24 +177,59 @@ app.post("/submit", async (req, res) => {
   });
 });
 
-// // ChatGPT 小助手路由
-// app.post('/gpt', async (req, res) => {
-//   try {
-//     const { messages } = req.body;
-//     const completion = await openai.createChatCompletion({
-//       model: 'gpt-4',
-//       messages,
-//       temperature : 0.7
-//     });
-//     const reply = completion.data.choices[0].message.content;
-//     res.json({ reply });
-//   } catch (error) {
-//     console.error('OpenAI API error:', error);
-//     res.status(500).json({ reply: '伺服器錯誤，請稍後再試。' });
-//   }
-// });
+//compiler 測試
+app.post('/save', (req, res) => {
+  const code = req.body.code;
+  fs.writeFileSync('main.c', code);
+  res.json({ status: 'ok' });
+});
+
+const server = http.createServer(app); // 建立 HTTP server (server 連線問題)
+const wss = new WebSocketServer({ server, path: '/ws' });
+
+wss.on('connection', (ws) => {
+  console.log('✅ WebSocket client connected');
+
+  // if (fs.existsSync('main')) {
+  //   try {
+  //     fs.unlinkSync('main');
+  //   } catch (e) {
+  //     console.error('刪除 main 執行檔失敗', e);
+  //   }
+  // }
+
+  const compile = spawn('gcc', ['main.c', '-o', 'main']);
+
+  compile.stderr.on('data', (data) => {
+    ws.send(data.toString());
+  });
+
+  compile.on('close', (code) => {
+    if (code !== 0) {
+      ws.send(`\n❌ 編譯失敗，代碼: ${code}`);
+      return;
+    }
+
+    const run = spawn('stdbuf', ['-o0', './main'], { shell: true });
+
+    run.stdout.on('data', (data) => ws.send(data.toString()));
+    run.stderr.on('data', (data) => ws.send(data.toString()));
+
+    ws.on('message', (msg) => {
+      run.stdin.write(msg);
+    });
+
+    run.on('close', (code) => {
+      ws.send(`\n===[程式結束]===\n`);
+    });
+  });
+});
 
 // 啟動伺服器
-app.listen(PORT, () => {
-  console.log(`Judge 伺服器運行在 http://localhost:${PORT}`);
+// app.listen(PORT, () => {
+//   console.log(`Judge 伺服器運行在 http://localhost:${PORT}`);
+// });
+
+server.listen(PORT,'0.0.0.0', () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });

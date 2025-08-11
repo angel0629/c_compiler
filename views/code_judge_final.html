@@ -10,15 +10,19 @@
   <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/c.min.js"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/monokai.min.css">
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
+
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="chatbot_style.css">
+
 </head>
 <body>
   <div class="header">
     <h1>C 語言線上編譯器</h1>
   </div>
   <div class="button-row">
-    <button class="execute-button" onclick="runCode()">執行程式</button>
+    <button class="execute-button" id="runBtn">執行程式</button>
     <button class="submit-button" onclick="submitAnswer()">送出解答</button>
   </div>
   <div class="main-container">
@@ -29,9 +33,7 @@
         <p id="info" class="text-block"></p>
       </div>
       <div class="section-block">
-        <h4>輸入
-
-說明</h4>
+        <h4>輸入說明</h4>
         <p id="input_info" class="text-block"></p>
       </div>
       <div class="section-block">
@@ -58,6 +60,7 @@
       <div id="output-container">
         <h3>輸出結果：</h3>
         <div id="output"><pre id="judge_output"></pre></div>
+        <div id="terminal"></div>
       </div>
     </div>
   </div>
@@ -81,5 +84,6 @@
   <script src="/compile_style.js"></script>
   <script src="/judge.js"></script>
   <script src="/chat.js"></script>
+   <script src="/compile.js"></script>
 </body>
 </html>

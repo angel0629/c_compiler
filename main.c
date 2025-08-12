@@ -1,7 +1,12 @@
 #include <stdio.h>
 int main() {
-    for(int i=0; i<5; i++){
-        printf("%d ",i);
-    }
-    return 0;
+char name[100];
+printf("請輸入你的名字: ");
+scanf("%s", name);
+printf("你好, %s!", name);
+int age;
+printf("請輸入你的年齡: ");
+scanf("%d", &age);
+printf("age: %d!", age);
+return 0;
 }

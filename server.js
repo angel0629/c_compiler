@@ -190,14 +190,6 @@ const wss = new WebSocketServer({ server, path: '/ws' });
 wss.on('connection', (ws) => {
   console.log('✅ WebSocket client connected');
 
-  // if (fs.existsSync('main')) {
-  //   try {
-  //     fs.unlinkSync('main');
-  //   } catch (e) {
-  //     console.error('刪除 main 執行檔失敗', e);
-  //   }
-  // }
-
   const compile = spawn('gcc', ['main.c', '-o', 'main']);
 
   compile.stderr.on('data', (data) => {
@@ -206,7 +198,7 @@ wss.on('connection', (ws) => {
 
   compile.on('close', (code) => {
     if (code !== 0) {
-      ws.send(`\n❌ 編譯失敗，代碼: ${code}`);
+      ws.send("\n❌ 編譯失敗，code: ${code}");
       return;
     }
 
@@ -216,19 +208,15 @@ wss.on('connection', (ws) => {
     run.stderr.on('data', (data) => ws.send(data.toString()));
 
     ws.on('message', (msg) => {
+      console.log('收到訊息:', msg.toString());  // 加上這行看有沒有收到
       run.stdin.write(msg);
     });
 
     run.on('close', (code) => {
-      ws.send(`\n===[程式結束]===\n`);
+      ws.send("===[程式結束]===\n");
     });
   });
 });
-
-// 啟動伺服器
-// app.listen(PORT, () => {
-//   console.log(`Judge 伺服器運行在 http://localhost:${PORT}`);
-// });
 
 server.listen(PORT,'0.0.0.0', () => {
   console.log(`Server running on http://localhost:${PORT}`);

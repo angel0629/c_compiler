@@ -17,7 +17,7 @@ editor.session.on('change', function(delta) {
 // Input simulation & execution handling
 let userInputs = [];
 let expectedInputs = [];
-let outputDiv = document.getElementById("terminal");
+let outputDiv = document.getElementById("output");
 let waitingForInput = false;
 let currentInputIndex = 0;
 

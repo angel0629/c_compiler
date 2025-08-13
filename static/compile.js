@@ -1,7 +1,14 @@
 let term;
 
 term = new Terminal({ cursorBlink: true });
-term.open(document.getElementById('terminal'));
+term = new Terminal({
+   cursorBlink: true,
+  cols: 70,   // 固定每行 80 個字
+  rows: 14,   // 固定顯示 24 行
+  // convertEol: true, // 讓 \n 自動換行
+  // wraparoundMode: true // 啟用自動換行
+});
+term.open(document.getElementById('output'));
 
 function runCode() {
   term.clear();

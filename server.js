@@ -27,16 +27,6 @@ app.use(session({
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-  
-
-/*
-// 原本的測試資料
-const testCases = [
-    { input: "world", expected: "hello, world" },
-    { input: "c++", expected: "hello, c++" },
-    { input: "Taiwan", expected: "hello, Taiwan" }
-];
-*/
 
 // OpenAI 設定
 const OpenAI = require('openai');

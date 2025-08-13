@@ -9,7 +9,6 @@ const { WebSocketServer } = require('ws');
 const http = require('http');
 
 
-const { spawn } = require('child_process');
 const crypto = require('crypto');
 const LIMITS = {
   WALL_MS: parseInt(process.env.J_WALL_MS || '2000'),   // 牆鐘時間(ms)

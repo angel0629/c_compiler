@@ -1,7 +1,7 @@
-#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
 int main() {
-    for (int i=0; i<100; i++){
-        printf("i= %d\n", i);   
-    }
+for(;;){}
     return 0;
 }

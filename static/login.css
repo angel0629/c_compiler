@@ -1,0 +1,83 @@
+/* login.css */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #56ccf2, #2f80ed);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .login-wrapper {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    display: flex;
+    width: 800px;
+    max-width: 95%;
+    overflow: hidden;
+  }
+  
+  .login-box {
+    display: flex;
+    width: 100%;
+  }
+  
+  .illustration {
+    flex: 1;
+    background: #f0f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .illustration img {
+    width: 100%;
+    max-width: 320px;
+  }
+  
+  .login-form {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .login-form h2 {
+    color: #2f80ed;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+  
+  .input-group {
+    margin-bottom: 20px;
+  }
+  
+  .input-group input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+  }
+  
+  button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(to right, #56ccf2, #2f80ed);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  button:hover {
+    background: linear-gradient(to right, #2f80ed, #56ccf2);
+  }
+  

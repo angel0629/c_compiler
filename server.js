@@ -12,10 +12,31 @@ const http = require('http');
 
 const app = express();
 const PORT = 3000;
+const session = require("express-session");
+
 
 // app.use(cors()); // 啟用跨域
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "static")));
+app.use(session({                       
+    secret: "your-secret-key",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }
+  }));
+
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+  
+
+/*
+// 原本的測試資料
+const testCases = [
+    { input: "world", expected: "hello, world" },
+    { input: "c++", expected: "hello, c++" },
+    { input: "Taiwan", expected: "hello, Taiwan" }
+];
+*/
 
 // OpenAI 設定
 const OpenAI = require('openai');
@@ -28,7 +49,77 @@ app.get("/", (req, res) => {
   res.redirect("/problem_list");
 });
 
-// 題目列表 API
+app.get('/home',(req,res) => {
+    res.redirect("/problem_list");
+});
+
+app.get("/user_info", (req, res)=> {
+    const user = req.session.user;
+    res.render("user_info", { user });
+});
+
+// 程式追蹤
+app.post('/receive_code',(req,res) =>{
+    const code = req.body.code
+    req.session.traceCode = code;
+    // console.log(`trace receive${code}`)
+    res.redirect('/trace'); 
+})
+
+app.get('/trace', (req, res) => {
+    const code = req.session.traceCode || "";
+    res.render("code_trace", { code });
+  });
+
+// 登入功能
+app.get("/login_page", (req, res)=> {
+    res.sendFile(path.join(__dirname, "views", "login.html"));
+});
+
+app.post("/api/login", async (req, res) => {
+    const { username, password } = req.body;
+    console.log(`接收到帳號:${username},密碼:${password}`)
+    try {
+        const user = await db.loginUser(username, password);
+  
+        if (user) {
+            console.log(`${user.uid},111111111111`)
+            console.log(`${user.usrname},111111111111`)
+            console.log(`${user.usr_group},111111111111`)
+            req.session.user = {
+              uid: user.uid,
+              usrname: user.usrname,
+              usr_group: user.usr_group
+            };
+            res.json({ success: true, user: req.session.user });
+          } else {
+            res.status(401).json({ success: false, message: "帳號或密碼錯誤" });
+          }
+        } catch (err) {
+          console.error(err);
+          res.status(500).json({ success: false, message: "伺服器錯誤" });
+        }
+      });
+  
+  // 查看目前登入狀態
+  app.get("/me", (req, res) => {
+    if (req.session.user) {
+      res.json({ loggedIn: true, user: req.session.user });
+    } else {
+      res.json({ loggedIn: false });
+    }
+  });
+  
+  // 登出
+  app.post("/logout", (req, res) => {
+    req.session.destroy();
+    res.json({ success: true });
+  });
+
+  
+
+//題目的 list
+// 提供前端資料 API
 app.get("/api/problem_data", async (req, res) => {
   try {
     const problem_data = await db.getAllQuestions();

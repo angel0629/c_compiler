@@ -19,8 +19,13 @@
 <body>
   <div class="header">
     <h1>C 語言線上編譯器</h1>
+    <div class="headerBTN">
+      <button onclick="home_page()">home</button>
+      <button class="usr-info" onclick="check_usr_info()">user_info</button>
+    </div>
   </div>
   <div class="button-row">
+    <button class="trace-button" onclick="traceCode()">程式追蹤</button>
     <button class="execute-button" id="runBtn">執行程式</button>
     <button class="submit-button" onclick="submitAnswer()">送出解答</button>
   </div>
@@ -83,6 +88,8 @@
   <script src="/compile_style.js"></script>
   <script src="/judge.js"></script>
   <script src="/chat.js"></script>
-   <script src="/compile.js"></script>
+  <script src="/compile.js"></script>>
+  <script src="/button.js"></script>
+  <!-- <script src="/trace.js"></script> -->
 </body>
 </html>

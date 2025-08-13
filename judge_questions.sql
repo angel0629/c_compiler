@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2025-04-30 08:33:18
--- 伺服器版本： 10.4.32-MariaDB
--- PHP 版本： 8.2.12
+-- 產生時間： 2025-08-03 05:55:12
+-- 伺服器版本： 10.4.28-MariaDB
+-- PHP 版本： 8.2.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -113,6 +113,28 @@ INSERT INTO `test` (`id`, `Input`, `Output`, `q_id`) VALUES
 (6, '11111 -11111', '0', 2),
 (7, '-1234 -1234', '-2468', 2);
 
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `user`
+--
+
+CREATE TABLE `user` (
+  `uid` int(8) UNSIGNED NOT NULL,
+  `usrname` varchar(255) DEFAULT NULL,
+  `pwd` varchar(255) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `usr_group` enum('user','admin') DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- 傾印資料表的資料 `user`
+--
+
+INSERT INTO `user` (`uid`, `usrname`, `pwd`, `email`, `usr_group`) VALUES
+(1, 'admin', 'admin', 'admin123@gmail.com', 'admin'),
+(2, 'student1', 'sdfg1234', 'test1@gmail.com', 'user');
+
 --
 -- 已傾印資料表的索引
 --
@@ -142,6 +164,14 @@ ALTER TABLE `test`
   ADD PRIMARY KEY (`id`);
 
 --
+-- 資料表索引 `user`
+--
+ALTER TABLE `user`
+  ADD PRIMARY KEY (`uid`),
+  ADD UNIQUE KEY `usrname` (`usrname`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
 -- 在傾印的資料表使用自動遞增(AUTO_INCREMENT)
 --
 
@@ -168,6 +198,12 @@ ALTER TABLE `questions`
 --
 ALTER TABLE `test`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `user`
+--
+ALTER TABLE `user`
+  MODIFY `uid` int(8) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

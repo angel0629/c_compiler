@@ -45,5 +45,13 @@ module.exports = {
     getAllQuestions: async () => { 
       const [rows] = await promisePool.query('SELECT id, no,name FROM `questions`;');
       return rows;
+    },
+    // 登入
+    loginUser: async (username, password) => {
+      const [rows] = await promisePool.query(
+        'SELECT uid, usrname, usr_group FROM user WHERE usrname = ? AND pwd = ?',
+        [username, password]
+      );
+      return rows[0] || null;  // null or user info
     }
 };

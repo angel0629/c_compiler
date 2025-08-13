@@ -18,7 +18,7 @@ function runCode() {
     const ws = new WebSocket(`ws://${location.host}/ws`);
 
   ws.onmessage = (event) => {
-    const msg = event.data;
+    let msg = event.data.replace(/\n/g, '\r\n'); // 統一轉成 \r\n
     if (msg.includes("===[程式結束]===")) {
       term.write('\r\n\r\n');  // 換行讓訊息貼底
       term.write(msg);

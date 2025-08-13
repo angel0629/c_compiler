@@ -1,4 +1,4 @@
-version: '3.8'
+# version: '3.8'
 
 services:
   app:
@@ -51,4 +51,5 @@ services:
       
 volumes:
   db_data:
-  judge_jobs: {}
+  judge_jobs:
+    name: judge_jobs

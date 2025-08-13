@@ -31,7 +31,7 @@ async function runOneTestInContainer(jobDir, timeoutSec = 2) {
     '--ulimit', `fsize=${parseSize(LIMITS.FSIZE)}`,
     '--tmpfs', '/tmp:rw,noexec,nosuid,nodev,size=16m',
     '--workdir', `/work/${path.basename(jobDir)}`,
-    '-v', 'c_compiler_judge_jobs:/work:ro',
+    '-v', 'judge_jobs:/work:ro',
     '-u', '1000:1000',
     'debian:bookworm-slim', 'bash', '-lc',
     `timeout ${timeoutSec}s ./main < ./input.txt`

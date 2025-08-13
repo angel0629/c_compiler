@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>C 語言線上編譯器</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+  <script src="https://unpkg.com/web-tree-sitter@0.20.8/dist/web-tree-sitter.js"></script>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="chatbot_style.css">
 
@@ -85,5 +86,117 @@
 <script src="/compile_style.js"></script>
 <script src="/judge.js"></script>
 <script src="/chat.js"></script>
+<script>
+  // Tree-sitter 即時偵錯初始化（前端）
+  (function () {
+    const WASM_URL = 'https://unpkg.com/tree-sitter-c@0.24.1/tree-sitter-c.wasm';
+    let tsParser = null;
+    let debounceTimer = null;
+
+    async function initTreeSitter() {
+      try {
+        if (!window.TreeSitter) return; // 保障 script 載入
+        await window.TreeSitter.init();
+        const parser = new window.TreeSitter();
+        const C = await window.TreeSitter.Language.load(WASM_URL);
+        parser.setLanguage(C);
+        tsParser = parser;
+        // 初次檢查
+        scheduleParse();
+      } catch (e) {
+        // 若初始化失敗，不中斷頁面其他功能
+        console.error('[Tree-sitter] 初始化失敗: ', e);
+      }
+    }
+
+    function scheduleParse() {
+      if (!tsParser || !window.editor) return;
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(parseAndAnnotate, 200);
+    }
+
+    function parseAndAnnotate() {
+      try {
+        const code = window.editor.getValue();
+        const tree = tsParser.parse(code);
+        const annotations = [];
+
+        if (tree.rootNode.hasError()) {
+          collectErrors(tree.rootNode).forEach((err) => {
+            const row = err.startPosition.row;
+            const message = buildErrorMessage(err, code);
+            annotations.push({ row, column: 0, text: message, type: 'error' });
+          });
+        }
+
+        // 去重同一行重複訊息（以第一則為主）
+        const dedup = new Map();
+        for (const a of annotations) {
+          if (!dedup.has(a.row)) dedup.set(a.row, a);
+        }
+        window.editor.session.setAnnotations(Array.from(dedup.values()));
+      } catch (e) {
+        console.error('[Tree-sitter] 解析失敗: ', e);
+      }
+    }
+
+    function collectErrors(node) {
+      const errs = [];
+      (function walk(n) {
+        if (n.type === 'ERROR' || n.isMissing()) {
+          errs.push(n);
+        }
+        for (const child of n.children || []) {
+          if (child.hasError && child.hasError()) {
+            walk(child);
+          } else if (child.type === 'ERROR' || (child.isMissing && child.isMissing())) {
+            walk(child);
+          }
+        }
+      })(node);
+      return errs;
+    }
+
+    function buildErrorMessage(errNode, fullText) {
+      try {
+        if (errNode.isMissing && errNode.isMissing()) {
+          return '語法缺少必要的符號或結構';
+        }
+        const start = errNode.startPosition;
+        const end = errNode.endPosition;
+        const lines = fullText.split('\n');
+        const lineText = lines[start.row] || '';
+        const snippet = lineText.trim();
+        if (snippet) {
+          return `語法錯誤，位於第 ${start.row + 1} 行: ${snippet}`;
+        }
+        return `語法錯誤，位於第 ${start.row + 1} 行`;
+      } catch {
+        return '語法錯誤';
+      }
+    }
+
+    // 等待 ACE 初始化後掛事件
+    function waitForEditorAndBind() {
+      const MAX_WAIT = 50; // *100ms = 5s
+      let tries = 0;
+      const t = setInterval(() => {
+        tries++;
+        if (window.editor && window.editor.session) {
+          clearInterval(t);
+          // 變更時解析
+          window.editor.session.on('change', scheduleParse);
+          // 載入完成後首次解析
+          scheduleParse();
+        } else if (tries > MAX_WAIT) {
+          clearInterval(t);
+        }
+      }, 100);
+    }
+
+    waitForEditorAndBind();
+    initTreeSitter();
+  })();
+</script>
 </body>
 </html>

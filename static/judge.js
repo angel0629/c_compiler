@@ -1,23 +1,19 @@
 // problem_list 抓所有題目
 async function fetchProblems() {
-    const res = await fetch('/api/problem_data'); // 從後端 API 抓資料
-    const data = await res.json();
-    function selectQuestion(id) {
-        window.location.href = "/code_judge_final?q_id=" + id;
-      }
-    const tbody = document.getElementById('show_list');
-
-    data.forEach(problem => {
-        const item = document.createElement("div");
-        item.className = "question-item";
-        item.onclick = () => selectQuestion(problem.no);
-        item.innerHTML = `
-          <div class="question-id">#${problem.no}</div>
-          <div class="question-title">${problem.name}</div>
-        `;
-        tbody.appendChild(item);
-        
-    });
+  const tbody = document.getElementById('show_list');
+  if (!tbody) return; // 這頁沒有清單就直接跳出
+  const res = await fetch('/api/problem_data');
+  const data = await res.json();
+  data.forEach(problem => {
+    const item = document.createElement("div");
+    item.className = "question-item";
+    item.onclick = () => window.location.href = "/code_judge_final?q_id=" + problem.no;
+    item.innerHTML = `
+      <div class="question-id">#${problem.no}</div>
+      <div class="question-title">${problem.name}</div>
+    `;
+    tbody.appendChild(item);
+  });
 }
 fetchProblems();
 
@@ -84,17 +80,24 @@ async function submitAnswer() {
         return;
     }
     let allPassed = true;
-    result.results.forEach(({ input, expected, output, error }) => {
+    result.results.forEach(({ input, expected, output, error, verdict }) => {
+
         outputElement.innerText += `輸入: ${input}\n`;
         outputElement.innerText += `正確輸出： ${expected}\n`;
-        outputElement.innerText += `實際輸出： ${output || "執行錯誤"}\n`;
+        outputElement.innerText += `實際輸出： ${output ?? "（無輸出）"}\n`;
+        
+        if (verdict) outputElement.innerText += `判定： ${verdict}\n`;   // ← 顯示 TLE/MLE/RE/OK
 
-        if (error || output!== expected){
+        // 只要有 verdict 且不是 OK，就算未通過；否則退回比對輸出與錯誤旗標
+        if ((verdict && verdict !== 'OK') || (!verdict && (error || output !== expected))) {
             allPassed = false;
         }
 
+
         if (error) outputElement.innerText += `ERROR: ${error}\n`;
         outputElement.innerText += "-------------------------\n";
+        if (verdict && verdict !== 'OK') allPassed = false;
+        else if (output !== expected || error) allPassed = false; // OK 但輸出不等 → 也要 fail
 
     });
 

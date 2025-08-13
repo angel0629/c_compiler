@@ -1,150 +1,75 @@
-var editor = ace.edit("editor");
-editor.setTheme("ace/theme/chrome");
-editor.session.setMode("ace/mode/c_cpp");
+let term;
 
-editor.setOptions({
-  vScrollBarAlwaysVisible: true,
-  scrollPastEnd: 0.5,
-  animatedScroll: true
+term = new Terminal({ cursorBlink: true });
+term = new Terminal({
+   cursorBlink: true,
+  cols: 70,   // 固定每行 80 個字
+  rows: 14,   // 固定顯示 24 行
+  // convertEol: true, // 讓 \n 自動換行
+  // wraparoundMode: true // 啟用自動換行
 });
+term.open(document.getElementById('output'));
 
-editor.session.on('change', function(delta) {
-  editor.renderer.scrollCursorIntoView({ padding: 20 });
-});
+function runCode() {
+  term.clear();
+  term.reset(); // 確保游標回到左上角
+  
+  const codeValue = editor.getValue();
+  let inputBuffer = ''; // 暫存使用者輸入
 
-let userInputs = [];
-let expectedInputs = [];
-let outputDiv = document.getElementById("output");
-let waitingForInput = false;
-let currentInputIndex = 0;
+  fetch('/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: codeValue }),
+  }).then(() => {
+    const ws = new WebSocket(`ws://${location.host}/ws`);
 
-async function runCode() {
-  const code = editor.getValue();
-
-  // 讓使用者輸入 stdin（可以多行）
-  const input = prompt("請輸入程式所需輸入：") || "";
-
-  const outputArea = document.getElementById("output");
-  outputArea.addEventListener("click",() =>{
-    document.getElementById('stdin').focus
-  })
-  outputArea.innerText = "執行中...\n";
-
-  const response = await fetch("https://emkc.org/api/v2/piston/execute", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      language: "c",
-      version: "*",
-      stdin: input,
-      files: [
-        {
-          name: "main.c",
-          content: code
-        }
-      ]
-    })
-  });
-
-  const result = await response.json();
-  let cleanOutput = "";
-
-  if (result.run?.stdout) cleanOutput += result.run.stdout;
-  if (result.run?.stderr) cleanOutput += result.run.stderr;
-  if (result.compile?.stderr) cleanOutput += result.compile.stderr;
-
-  outputArea.innerText = cleanOutput || "無輸出";
-}
-
-
-function handleUserInput(event, inputElement) {
-  if (event.key === "Enter" && waitingForInput) {
-    event.preventDefault();
-    userInputs.push(inputElement.innerText.trim());
-    inputElement.contentEditable = "false";
-    currentInputIndex++;
-
-    if (currentInputIndex < expectedInputs.length) {
-      expectedInputs[currentInputIndex].focus();
+  ws.onmessage = (event) => {
+    let msg = event.data.replace(/\n/g, '\r\n'); // 統一轉成 \r\n
+    if (msg.includes("===[程式結束]===")) {
+      term.write('\r\n\r\n');  // 換行讓訊息貼底
+      term.write(msg);
     } else {
-      waitingForInput = false;
-      sendCodeToCompiler();
+      term.write(msg);
     }
-  }
+  };
+
+    ws.onopen = () => console.log('WebSocket connected');
+    ws.onclose = () => console.log('WebSocket closed');
+    ws.onerror = (error) => console.error('WebSocket error:', error);
+
+    // 處理輸入
+    term.onData((data) => {
+      console.log(JSON.stringify(data));
+      if (data === '\r') { // Enter 鍵
+        ws.send(inputBuffer+'\n'); // 一次性送到後端
+        term.write('\r\n'); // 在 terminal 上換行
+        console.log('User input sent:', inputBuffer);
+        inputBuffer = ''; // 清空緩衝區
+      } else if (data === '\u007F') { // Backspace 鍵
+        if (inputBuffer.length > 0) {
+          inputBuffer = inputBuffer.slice(0, -1);
+          term.write('\b \b'); // 在 terminal 上刪掉字
+        }
+      } else {
+        inputBuffer += data; // 暫存字元  
+        term.write(data); // 即時顯示在 terminal
+      }
+    });
+  }).catch(error => console.error('Fetch error:', error));
 }
 
-function toggleChatBox() {
-  const chatBox = document.getElementById("chat-box");
-  chatBox.classList.toggle("active");
-}
-
-function closeChatBox() {
-  const chatBox = document.getElementById("chat-box");
-  chatBox.classList.remove("active");
-}
 
 
-let isDragging = false;
-const questionBox = document.getElementById('question-box');
-questionBox.addEventListener('mousemove', (e) => {
-  if (e.offsetX >= questionBox.offsetWidth - 10) {
-    questionBox.style.cursor = 'ew-resize';
-  } else {
-    questionBox.style.cursor = 'default';
-  }
+window.addEventListener('DOMContentLoaded', () => {
+  // 現在確定整個頁面元素都已載入，可以安全使用 document.getElementById
+  document.getElementById('runBtn').addEventListener('click', () => {
+    const codeValue = editor.getValue();
+    
+    // 你後續要做的事情，例如 fetch 傳送 codeValue
+    term.clear();
+    runCode();
+  });
 });
 
-questionBox.addEventListener('mousedown', (e) => {
-  if (e.offsetX >= questionBox.offsetWidth - 10) {
-    isDragging = true;
-    document.body.style.cursor = 'ew-resize';
-  }
-});
 
-window.addEventListener('mousemove', (e) => {
-  if (!isDragging) return;
-  const containerLeft = document.querySelector('.main-container').offsetLeft;
-  const newWidth = e.clientX - containerLeft;
-  const minWidth = 150;
-  const maxWidth = window.innerWidth * 0.7;
-  if (newWidth >= minWidth && newWidth <= maxWidth) {
-    questionBox.style.width = `${newWidth}px`;
-  }
-});
-
-window.addEventListener('mouseup', () => {
-  isDragging = false;
-  document.body.style.cursor = 'default';
-});
-
-let isDraggingOutputTop = false;
-const outputContainer = document.getElementById('output-container');
-outputContainer.addEventListener('mousemove', (e) => {
-  if (e.offsetY <= 10) {
-    outputContainer.style.cursor = 'ns-resize';
-  } else {
-    outputContainer.style.cursor = 'default';
-  }
-});
-
-outputContainer.addEventListener('mousedown', (e) => {
-  if (e.offsetY <= 10) {
-    isDraggingOutputTop = true;
-    document.body.style.cursor = 'ns-resize';
-  }
-});
-
-window.addEventListener('mousemove', (e) => {
-  if (!isDraggingOutputTop) return;
-  const newHeight = outputContainer.offsetHeight - (e.clientY - outputContainer.offsetTop);
-  const minHeight = 100;
-  const maxHeight = window.innerHeight * 0.7;
-  if (newHeight >= minHeight && newHeight <= maxHeight) {
-    outputContainer.style.height = `${newHeight}px`;
-  }
-});
-
-window.addEventListener('mouseup', () => {
-  isDraggingOutputTop = false;
-  document.body.style.cursor = 'default';
-});

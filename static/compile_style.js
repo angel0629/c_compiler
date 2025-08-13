@@ -156,7 +156,20 @@ async function sendCodeToCompiler() {
   if (result.run?.stderr) cleanOutput += `<br><span style='color:red'>${result.run.stderr}</span>`;
   if (result.compile?.stderr) cleanOutput += `<br><span style='color:orange'>${result.compile.stderr}</span>`;
 
-  outputDiv.innerHTML += cleanOutput || "無輸出";
+  const problemDiv = document.getElementById("problem_output");
+  outputDiv.innerHTML = result.run?.stdout || "無輸出";
+  problemDiv.innerHTML = "";
+
+  if (result.run?.stderr) {
+    problemDiv.innerHTML += `執行錯誤:\n${result.run.stderr}`;
+  }
+  if (result.compile?.stderr) {
+    problemDiv.innerHTML += `編譯錯誤:\n${result.compile.stderr}`;
+  }
+  if (!problemDiv.innerHTML) {
+    problemDiv.innerHTML = "沒有錯誤。";
+  }
+
 }
 
 // Chat functions
@@ -168,6 +181,41 @@ function closeChatBox() {
   const chatBox = document.getElementById("chat-box");
   chatBox.classList.remove("active");
 }
+
+
+
+
+
+
+
+
+
+// ✅ NEW: Function to switch between Output and Problems tabs
+function showTab(tab) {
+  const outputTab = document.getElementById("output");
+  const problemTab = document.getElementById("problems");
+  const buttons = document.querySelectorAll(".tab-button");
+
+  if (tab === "output") {
+    outputTab.style.display = "block";
+    problemTab.style.display = "none";
+  } else {
+    outputTab.style.display = "none";
+    problemTab.style.display = "block";
+  }
+
+  buttons.forEach(btn => btn.classList.remove("active"));
+  document.querySelector(`.tab-button[onclick="showTab('${tab}')"]`).classList.add("active");
+}
+
+
+
+
+
+
+
+
+
 
 let isDragging = false;
 const questionBox = document.getElementById('question-box');

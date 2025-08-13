@@ -59,8 +59,12 @@
       </div>
 
       <div id="output-container">
-        <h3>輸出結果：</h3>
+        <div class="output-tabs">
+          <button class="tab-button active" onclick="showTab('output')">輸出結果</button>
+          <button class="tab-button" onclick="showTab('problems')">問題</button>
+        </div>
         <div id="output"><pre id="judge_output"></pre></div>
+        <div id="problems" style="display:none;"><pre id="problem_output"></pre></div>
       </div>
     </div>
   </div>

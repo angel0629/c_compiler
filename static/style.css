@@ -243,3 +243,41 @@ button:hover {
   background-color: rgba(255, 0, 0, 0.1);
   position: absolute;
 }
+
+
+
+
+
+
+
+.output-tabs {
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+}
+
+.tab-button {
+  background-color: transparent;
+  border: none;
+  padding: 6px 10px;
+  font-size: 16px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.tab-button.active {
+  border-bottom: 2px solid #4a90e2;
+  color: #4a90e2;
+  font-weight: bold;
+}
+
+#output, #problems {
+  margin-top: 50px;
+  white-space: pre-wrap;
+  font-size: 16px
+}

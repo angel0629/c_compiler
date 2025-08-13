@@ -3,7 +3,6 @@ const express = require("express");
 const db = require('./db'); // db.js 的檔案
 const fs = require("fs");
 const path = require("path");
-const { spawn } = require('child_process');
 const crypto = require('crypto');
 const LIMITS = {
   WALL_MS: parseInt(process.env.J_WALL_MS || '2000'),   // 牆鐘時間(ms)
@@ -13,8 +12,11 @@ const LIMITS = {
   NOFILE: process.env.J_NOFILE || '64',                 // 開檔數 (ulimit)
   FSIZE: process.env.J_FSIZE || '1m'                    // 可產生檔案大小
 };
+//compiler 測試
+const { WebSocketServer } = require('ws');
+const http = require('http');
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const session = require("express-session");
 
 async function runOneTestInContainer(jobDir, timeoutSec = 2) {
@@ -373,6 +375,6 @@ wss.on('connection', (ws) => {
   });
 });
 
-server.listen(PORT,'0.0.0.0', () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server listening on ${PORT}`);
 });

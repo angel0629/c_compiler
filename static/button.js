@@ -44,11 +44,29 @@ setupLoginButton();
 
 
 async function check_usr_info() {
-  const res = await fetch('/user_info')
+  const res = await fetch('/user_info');
   window.location.href = res.url;
 }
 
 async function home_page(){
-  const res = await fetch('/home')
+  const res = await fetch('/home');
   window.location.href = res.url;
+}
+
+
+// 追蹤程式
+async function traceCode() {
+  const code = editor.getValue();
+
+  const res = await fetch('/receive_code', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ code })
+  });
+
+  if (res.redirected) {
+    window.location.href = res.url;
+  }
 }

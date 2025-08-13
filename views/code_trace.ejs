@@ -12,25 +12,15 @@
 <body>
   <div class="header">
     <h1>C 語言線上編譯器</h1>
-    <div class="headerBTN">
-      <button onclick="home_page()">home</button>
-      <button class="usr-info" onclick="check_usr_info()">user_info</button>
-    </div>
+  </div>
+  <div class="button-row">
+    <button class="execute-button" onclick="previous()">上一步</button>
+    <button class="submit-button" onclick="next()">下一步</button>
   </div>
 
-  <div class="button-row">
-    <button class="trace-button" onclick="traceCode()">程式追蹤</button>
-    <button class="execute-button" onclick="runCode()">執行程式</button>
-    <button class="submit-button" onclick="submitAnswer()">送出解答</button>
-  </div>
   <div class="main-container">
     <div id="question-box">
-      <h2 class="section-title">題目描述</h2>
-    
-      <div class="section-block">
-        <h4>內容說明</h4>
-        <p id="info" class="text-block"></p>
-      </div>
+      <h2 class="section-title">記憶體配置模擬圖</h2>
     
       <div class="section-block">
         <h4>輸入說明</h4>
@@ -42,25 +32,15 @@
         <p id="output_info" class="text-block"></p>
       </div>
     
-      <div class="section-block">
-        <h4>範例測資</h4>
-        <table class="example-table">
-          <thead>
-            <tr>
-              <th>範例輸入</th>
-              <th>範例輸出</th>
-            </tr>
-          </thead>
-          <tbody id="show_info_list">
-            <!-- 範例資料載入位置 -->
-          </tbody>
-        </table>
-      </div>
+      
     </div>
 
+    
+    
     <div class="right-side">
       <div id="editor-container">
-        <div id="editor"><textarea id="codeInput"></textarea></div>
+        <div id="editor"><textarea id="codeInput" ><%= code %></textarea></div>
+        
       </div>
 
       <div id="output-container">
@@ -87,10 +67,7 @@
     </div>
   </div>
 
-<script src="/compile_style.js"></script>
-<script src="/judge.js"></script>
-<script src="/chat.js"></script>
-<script src="/button.js"></script>
-<!-- <script src="/trace.js"></script> -->
+
+<script src="/trace.js"></script>
 </body>
 </html>

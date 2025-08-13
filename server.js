@@ -45,6 +45,19 @@ app.get("/user_info", (req, res)=> {
     res.render("user_info", { user });
 });
 
+// 程式追蹤
+app.post('/receive_code',(req,res) =>{
+    const code = req.body.code
+    req.session.traceCode = code;
+    // console.log(`trace receive${code}`)
+    res.redirect('/trace'); 
+})
+
+app.get('/trace', (req, res) => {
+    const code = req.session.traceCode || "";
+    res.render("code_trace", { code });
+  });
+
 // 登入功能
 app.get("/login_page", (req, res)=> {
     res.sendFile(path.join(__dirname, "views", "login.html"));

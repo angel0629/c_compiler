@@ -161,7 +161,7 @@ button:hover {
 }
 #output-container {
   width: 100%;
-  min-height: 240px;
+  min-height: 260px;
   max-height: 60vh;
   border-top: 1px solid #ddd;
   background-color: #ffffff;

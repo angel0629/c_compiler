@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C 語言線上編譯器</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+    <script src="https://unpkg.com/web-tree-sitter@0.20.8/tree-sitter.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header> C 語言線上編譯器</header>
+    <div class="main">
+        <!-- 題目區（左欄） -->
+        <div class="left-panel">
+            <h2>題目敘述</h2>
+            <div>
+                <strong>內容</strong>
+                <p>學完所有你現在面對的第一個挑戰題，請寫一個程式，可以讓使用者輸入指定的字串，並且輸出指定的字串。例如：輸入字串 "world"，則顯示出 "hello, world"。</p>
+            </div>
+            <table>
+                <tr><th colspan="2">輸入輸出</th></tr>
+                <tr><td>輸入說明</td><td>輸入線共一行，內含一組文字</td></tr>
+                <tr><td>輸出說明</td><td>輸出題目指定的文字。</td></tr>
+            </table>
+            <table>
+                <tr><th>範例輸入</th><th>範例輸出</th></tr>
+                <tr><td>world</td><td>hello, world</td></tr>
+                <tr><td>c++</td><td>hello, c++</td></tr>
+                <tr><td>Taiwan</td><td>hello, Taiwan</td></tr>
+            </table>
+        </div>
+
+        <!-- 編輯區（右欄） -->
+        <div class="right-panel">
+            <div class="button-bar">
+                <h3>即時語法檢查</h3>
+            </div>
+            <div id="editor">#include &lt;stdio.h&gt;
+int main() {
+    printf("Hello World\n");
+    return 0;
+}</div>
+            <div id="output">
+                <h3>語法檢查結果：</h3>
+                <div id="syntax-errors" style="color: red; margin-top: 10px;"></div>
+                <div id="status-indicator"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="compiler.js"></script>
+    <script>
+        let parser = null;
+        let C = null;
+        let isInitialized = false;
+
+        // 等待 editor 初始化完成後再初始化 Tree-sitter
+        function waitForEditor() {
+            if (typeof editor !== 'undefined' && editor) {
+                console.log('Editor 已準備就緒，開始初始化 Tree-sitter...');
+                initTreeSitter();
+            } else {
+                console.log('等待 Editor 初始化...');
+                setTimeout(waitForEditor, 100);
+            }
+        }
+
+        // 初始化 Tree-sitter
+        async function initTreeSitter() {
+            try {
+                console.log('開始初始化 Tree-sitter...');
+                await TreeSitter.init();
+                console.log('Tree-sitter 核心初始化完成');
+                
+                console.log('正在載入 C 語言語法檔案...');
+                // 嘗試不同的載入方式
+                try {
+                    C = await TreeSitter.Language.load('./tree-sitter-c.wasm');
+                } catch (wasmError) {
+                    console.warn('直接載入 WASM 失敗，嘗試其他方式:', wasmError);
+                    // 如果直接載入失敗，嘗試使用 fetch
+                    const response = await fetch('./tree-sitter-c.wasm');
+                    const wasmBuffer = await response.arrayBuffer();
+                    C = await TreeSitter.Language.load(wasmBuffer);
+                }
+                console.log('C 語言語法檔案載入成功');
+                
+                parser = new TreeSitter();
+                parser.setLanguage(C);
+                console.log('Tree-sitter C 語言解析器初始化成功');
+                
+                isInitialized = true;
+                
+                // 更新狀態指示器
+                updateStatusIndicator(true);
+                
+                // 設定編輯器語法檢查
+                setupSyntaxChecking();
+                
+                // 執行初始語法檢查
+                setTimeout(() => {
+                    checkSyntax();
+                    console.log('初始語法檢查完成');
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Tree-sitter 初始化失敗:', error);
+                updateStatusIndicator(false, error.message);
+            }
+        }
+
+        // 更新狀態指示器
+        function updateStatusIndicator(success, errorMessage = '') {
+            const statusDiv = document.getElementById('problem_output');
+            if (success) {
+                statusDiv.innerHTML = '<span style="color: green;">✓ Tree-sitter 已就緒</span>';
+                statusDiv.style.display = 'block';
+            } else {
+                statusDiv.innerHTML = `<span style="color: red;">✗ 初始化失敗: ${errorMessage}</span>`;
+                statusDiv.style.display = 'block';
+            }
+        }
+
+        // 設定語法檢查
+        function setupSyntaxChecking() {
+            if (!editor) {
+                console.warn('編輯器尚未初始化，無法設定語法檢查');
+                return;
+            }
+            
+            console.log('設定編輯器語法檢查監聽器...');
+            // 監聽編輯器內容變化
+            editor.getSession().on('change', function() {
+                if (isInitialized) {
+                    setTimeout(checkSyntax, 500); // 延遲 500ms 避免過於頻繁檢查
+                }
+            });
+            console.log('語法檢查監聽器設定完成');
+        }
+
+        // 檢查語法
+        function checkSyntax() {
+            if (!parser || !isInitialized) {
+                console.warn('解析器尚未初始化，跳過語法檢查');
+                return;
+            }
+            
+            const code = editor.getValue();
+            console.log('正在檢查語法...', code.substring(0, 50) + '...');
+            
+            const tree = parser.parse(code);
+            const errors = [];
+            
+            // 檢查語法錯誤
+            const query = C.query(`
+                (ERROR) @error
+                (preproc_function_def) @warning
+            `);
+            
+            const captures = query.captures(tree.rootNode);
+            console.log('語法檢查結果:', captures.length, '個問題');
+            
+            captures.forEach(capture => {
+                const node = capture.node;
+                const type = capture.name;
+                
+                if (type === 'error') {
+                    errors.push({
+                        type: '語法錯誤',
+                        line: node.startPosition.row + 1,
+                        message: '語法錯誤'
+                    });
+                }
+            });
+            
+            // 顯示錯誤
+            displayErrors(errors);
+        }
+
+        // 顯示錯誤
+        function displayErrors(errors) {
+            const errorDiv = document.getElementById('syntax-errors');
+            
+            if (errors.length === 0) {
+                errorDiv.innerHTML = '<span style="color: green;">✓ 語法檢查通過</span>';
+                console.log('語法檢查通過');
+                
+                // 清除 Tree-sitter 錯誤標記，保留 GCC 標記
+                if (typeof editor !== 'undefined' && editor) {
+                    const currentAnnotations = editor.session.getAnnotations();
+                    const gccAnnotations = currentAnnotations.filter(ann => ann.source === 'gcc');
+                    editor.session.setAnnotations(gccAnnotations);
+                }
+                
+                // 清除輸出區域中的 GCC 錯誤訊息（如果 Tree-sitter 通過但 GCC 可能還有錯誤）
+                if (typeof window.outputDiv !== 'undefined' && window.outputDiv) {
+                    const outputContent = window.outputDiv.innerHTML;
+                    // 移除包含 "🛑 GCC 語法錯誤：" 的行（更精確的匹配）
+                    const cleanedContent = outputContent.replace(/<br><span style="color: red;">🛑 GCC 語法錯誤：<\/span><br><span style="color: red;">[^<]*<\/span>/g, '');
+                    // 移除包含 "🛑 GCC 語法檢查服務錯誤：" 的行
+                    const finalContent = cleanedContent.replace(/<br><span style="color: red;">🛑 GCC 語法檢查服務錯誤：[^<]*<\/span>/g, '');
+                    window.outputDiv.innerHTML = finalContent;
+                }
+            } else {
+                let errorHtml = '<h4>語法檢查結果：</h4>';
+                errors.forEach(error => {
+                    errorHtml += `<div style="margin: 5px 0;">
+                        <span style="color: red;">● 第 ${error.line} 行: ${error.message}</span>
+                    </div>`;
+                });
+                
+                errorDiv.innerHTML = errorHtml;
+                console.log('發現語法錯誤:', errors);
+                
+                // 添加 Tree-sitter 錯誤標記到編輯器
+                if (typeof editor !== 'undefined' && editor) {
+                    const treeSitterAnnotations = errors.map(error => ({
+                        row: error.line - 1, // ACE 編輯器行號從 0 開始
+                        column: 0,
+                        text: error.message,
+                        type: 'error',
+                        source: 'tree-sitter'
+                    }));
+                    
+                    const currentAnnotations = editor.session.getAnnotations();
+                    const gccAnnotations = currentAnnotations.filter(ann => ann.source === 'gcc');
+                    const allAnnotations = [...gccAnnotations, ...treeSitterAnnotations];
+                    editor.session.setAnnotations(allAnnotations);
+                }
+            }
+        }
+
+        // 測試函數 - 可以在控制台呼叫
+        window.testTreeSitter = function() {
+            console.log('=== Tree-sitter 測試 ===');
+            console.log('初始化狀態:', isInitialized);
+            console.log('解析器:', parser);
+            console.log('C 語言語法:', C);
+            console.log('Editor:', editor);
+            
+            if (parser && C) {
+                const testCode = 'int main() { return 0; }';
+                const tree = parser.parse(testCode);
+                console.log('測試解析結果:', tree.rootNode.toString());
+                return true;
+            }
+            return false;
+        };
+
+        // 頁面載入時等待 editor 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('頁面載入完成，等待 Editor 初始化...');
+            waitForEditor();
+        });
+
+        // 全域變數供其他腳本使用
+        window.checkSyntax = checkSyntax;
+        window.initTreeSitter = initTreeSitter;
+    </script>
+</body>
+</html>

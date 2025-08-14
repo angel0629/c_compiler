@@ -3,7 +3,8 @@ const express = require("express");
 const db = require('./db'); // db.js 的檔案
 const fs = require("fs");
 const path = require("path");
-
+const { exec } = require('child_process');//gcc
+const cors = require('cors');//gcc
 //compiler 測試
 const { WebSocketServer } = require('ws');
 const http = require('http');
@@ -21,7 +22,7 @@ const LIMITS = {
 const app = express();
 const PORT = 3000;
 const session = require("express-session");
-
+app.use(cors());//gcc
 async function runOneTestInContainer(jobDir, timeoutSec = 2) {
   const name = `judge-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
   const args = [
@@ -67,7 +68,7 @@ async function runOneTestInContainer(jobDir, timeoutSec = 2) {
 
   // --- 4) 判斷 OOM、清理 ---
   const oomKilled = await sh(`docker inspect --format '{{.State.OOMKilled}}' ${name}`).catch(() => 'false');
-  await sh(`docker rm -f ${name}`).catch(() => {});
+  await sh(`docker rm -f ${name}`).catch(() => { });
 
   // --- 5) Verdict 映射 ---
   let verdict = 'OK';
@@ -88,7 +89,7 @@ async function runOneTestInContainer(jobDir, timeoutSec = 2) {
 
 function sh(cmd) {
   return new Promise((res, rej) => {
-    const p = spawn('bash', ['-lc', cmd], { stdio: ['ignore','pipe','pipe'] });
+    const p = spawn('bash', ['-lc', cmd], { stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '', err = '';
     p.stdout.on('data', d => out += d.toString());
     p.stderr.on('data', d => err += d.toString());
@@ -102,18 +103,21 @@ function parseSize(v) {
   if (!m) return v;
   const n = BigInt(m[1]);
   const mul = m[2]?.toLowerCase();
-  const factor = mul === 'k' ? 1024n : mul === 'm' ? 1024n**2n : mul === 'g' ? 1024n**3n : 1n;
+  const factor = mul === 'k' ? 1024n : mul === 'm' ? 1024n ** 2n : mul === 'g' ? 1024n ** 3n : 1n;
   return String(n * factor);
 }
+// 提供靜態檔案
+app.use(express.static('.'));
 
+// GCC 語法檢查 API
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "static")));
-app.use(session({                       
-    secret: "your-secret-key",
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false }
-  }));
+app.use(session({
+  secret: "your-secret-key",
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }
+}));
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -129,74 +133,74 @@ app.get("/", (req, res) => {
   res.redirect("/problem_list");
 });
 
-app.get('/home',(req,res) => {
-    res.redirect("/problem_list");
+app.get('/home', (req, res) => {
+  res.redirect("/problem_list");
 });
 
-app.get("/user_info", (req, res)=> {
-    const user = req.session.user;
-    res.render("user_info", { user });
+app.get("/user_info", (req, res) => {
+  const user = req.session.user;
+  res.render("user_info", { user });
 });
 
 // 程式追蹤
-app.post('/receive_code',(req,res) =>{
-    const code = req.body.code
-    req.session.traceCode = code;
-    // console.log(`trace receive${code}`)
-    res.redirect('/trace'); 
+app.post('/receive_code', (req, res) => {
+  const code = req.body.code
+  req.session.traceCode = code;
+  // console.log(`trace receive${code}`)
+  res.redirect('/trace');
 })
 
 app.get('/trace', (req, res) => {
-    const code = req.session.traceCode || "";
-    res.render("code_trace", { code });
-  });
+  const code = req.session.traceCode || "";
+  res.render("code_trace", { code });
+});
 
 // 登入功能
-app.get("/login_page", (req, res)=> {
-    res.sendFile(path.join(__dirname, "views", "login.html"));
+app.get("/login_page", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "login.html"));
 });
 
 app.post("/api/login", async (req, res) => {
-    const { username, password } = req.body;
-    console.log(`接收到帳號:${username},密碼:${password}`)
-    try {
-        const user = await db.loginUser(username, password);
-  
-        if (user) {
-            console.log(`${user.uid},111111111111`)
-            console.log(`${user.usrname},111111111111`)
-            console.log(`${user.usr_group},111111111111`)
-            req.session.user = {
-              uid: user.uid,
-              usrname: user.usrname,
-              usr_group: user.usr_group
-            };
-            res.json({ success: true, user: req.session.user });
-          } else {
-            res.status(401).json({ success: false, message: "帳號或密碼錯誤" });
-          }
-        } catch (err) {
-          console.error(err);
-          res.status(500).json({ success: false, message: "伺服器錯誤" });
-        }
-      });
-  
-  // 查看目前登入狀態
-  app.get("/me", (req, res) => {
-    if (req.session.user) {
-      res.json({ loggedIn: true, user: req.session.user });
-    } else {
-      res.json({ loggedIn: false });
-    }
-  });
-  
-  // 登出
-  app.post("/logout", (req, res) => {
-    req.session.destroy();
-    res.json({ success: true });
-  });
+  const { username, password } = req.body;
+  console.log(`接收到帳號:${username},密碼:${password}`)
+  try {
+    const user = await db.loginUser(username, password);
 
-  
+    if (user) {
+      console.log(`${user.uid},111111111111`)
+      console.log(`${user.usrname},111111111111`)
+      console.log(`${user.usr_group},111111111111`)
+      req.session.user = {
+        uid: user.uid,
+        usrname: user.usrname,
+        usr_group: user.usr_group
+      };
+      res.json({ success: true, user: req.session.user });
+    } else {
+      res.status(401).json({ success: false, message: "帳號或密碼錯誤" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "伺服器錯誤" });
+  }
+});
+
+// 查看目前登入狀態
+app.get("/me", (req, res) => {
+  if (req.session.user) {
+    res.json({ loggedIn: true, user: req.session.user });
+  } else {
+    res.json({ loggedIn: false });
+  }
+});
+
+// 登出
+app.post("/logout", (req, res) => {
+  req.session.destroy();
+  res.json({ success: true });
+});
+
+
 
 //題目的 list
 // 提供前端資料 API
@@ -356,28 +360,36 @@ wss.on('connection', (ws) => {
     ws.send(data.toString());
   });
 
-  compile.on('close', (code) => {
-    if (code !== 0) {
-      ws.send("\n❌ 編譯失敗，code: ${code}");
-      return;
+  exec('gcc -fsyntax-only main.c', (err, stdout, stderr) => {
+    if (err) {
+      return res.json({ success: false, error: stderr });
     }
+    res.json({ success: true });
+  });
+});//gcc
 
-    const run = spawn('stdbuf', ['-o0', './main'], { shell: true });
+compile.on('close', (code) => {
+  if (code !== 0) {
+    ws.send("\n❌ 編譯失敗，code: ${code}");
+    return;
+  }
 
-    run.stdout.on('data', (data) => ws.send(data.toString()));
-    run.stderr.on('data', (data) => ws.send(data.toString()));
+  const run = spawn('stdbuf', ['-o0', './main'], { shell: true });
 
-    ws.on('message', (msg) => {
-      console.log('收到訊息:', msg.toString());  // 加上這行看有沒有收到
-      run.stdin.write(msg);
-    });
+  run.stdout.on('data', (data) => ws.send(data.toString()));
+  run.stderr.on('data', (data) => ws.send(data.toString()));
 
-    run.on('close', (code) => {
-      ws.send("===[程式結束]===\n");
-    });
+  ws.on('message', (msg) => {
+    console.log('收到訊息:', msg.toString());  // 加上這行看有沒有收到
+    run.stdin.write(msg);
+  });
+
+  run.on('close', (code) => {
+    ws.send("===[程式結束]===\n");
   });
 });
 
-server.listen(PORT,'0.0.0.0', () => {
+
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

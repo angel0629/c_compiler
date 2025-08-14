@@ -26,8 +26,8 @@
   </div>
   <div class="button-row">
     <button class="trace-button" onclick="traceCode()">程式追蹤</button>
-    <button class="execute-button" id="runBtn">執行程式</button>
-    <button class="submit-button" onclick="submitAnswer()">送出解答</button>
+    <button class="execute-button" id="runBtn" onclick="showTab('terminal')">執行程式</button>
+        <button class="submit-button" onclick="showTab('output'); submitAnswer();">送出解答</button>
   </div>
   <div class="main-container">
     <div id="question-box">
@@ -62,9 +62,14 @@
         <div id="editor"><textarea id="codeInput"></textarea></div>
       </div>
       <div id="output-container">
-        <h3>輸出結果：</h3>
-        <div id="output"><pre id="judge_output"></pre></div>
-        <!-- <div id="terminal"></div> -->
+        <div class="output-tabs">
+          <button class="tab-button active" onclick="showTab('terminal')">Terminal</button>
+          <button class="tab-button" onclick="showTab('output')">Judge 結果</button>
+          <button class="tab-button" onclick="showTab('problems')">偵測問題</button>
+        </div>
+        <div id="terminal"></div>
+        <div id="output" style="display:none;"><pre id="judge_output"></pre></div>
+        <div id="problems" style="display:none;"><pre id="problem_output"></pre></div>
       </div>
     </div>
   </div>

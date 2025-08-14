@@ -8,7 +8,7 @@ term = new Terminal({
   // convertEol: true, // 讓 \n 自動換行
   // wraparoundMode: true // 啟用自動換行
 });
-term.open(document.getElementById('output'));
+term.open(document.getElementById('terminal'));
 
 function runCode() {
   term.clear();

@@ -17,147 +17,28 @@ editor.session.on('change', function(delta) {
 // Input simulation & execution handling
 let userInputs = [];
 let expectedInputs = [];
-let outputDiv = document.getElementById("output");
+let outputDiv = document.getElementById("terminal");
 let waitingForInput = false;
 let currentInputIndex = 0;
 
-// async function runCode() {
-//   console.log("[debug] runCode() called");
-//   userInputs = [];
-//   expectedInputs = [];
-//   currentInputIndex = 0;
-//   waitingForInput = false;
-//   outputDiv.innerHTML = "";
 
-//   const code = editor.getValue();
-//   console.log("[debug] 編輯器取得程式碼：", code);
-//   const lines = code.split("\n");
 
-//   const printfRegex = /printf\(["']([^"']+)["']\);/g;
-//   const scanfRegex = /scanf\(["'][^"']*["'],\s*&?\w+\)/g;
+async function sendCodeToCompiler() {
+  const problemDiv = document.getElementById("problem_output");
+  outputDiv.innerHTML = result.run?.stdout || "無輸出";
+  problemDiv.innerHTML = "";
 
-//   let printfMatches = [];
-//   let match;
-//   while ((match = printfRegex.exec(code)) !== null) {
-//     printfMatches.push(match[1]);
-//   }
+  if (result.run?.stderr) {
+    problemDiv.innerHTML += `執行錯誤:\n${result.run.stderr}`;
+  }
+  if (result.compile?.stderr) {
+    problemDiv.innerHTML += `編譯錯誤:\n${result.compile.stderr}`;
+  }
+  if (!problemDiv.innerHTML) {
+    problemDiv.innerHTML = "沒有錯誤。";
+  }
 
-//   let scanfMatches = code.match(scanfRegex);
-//   if (scanfMatches) {
-//     for (let i = 0; i < scanfMatches.length; i++) {
-//       let promptText = printfMatches[i] || `請輸入第 ${i + 1} 個輸入值：`;
-//       let lineDiv = document.createElement("div");
-//       lineDiv.innerHTML = promptText + " <span contenteditable='true' class='user-input' onkeypress='handleUserInput(event, this)'></span>";
-//       outputDiv.appendChild(lineDiv);
-//       expectedInputs.push(lineDiv.querySelector(".user-input"));
-//     }
-//     waitingForInput = true;
-//     expectedInputs[0].focus();
-//     return;
-//   }
-
-//   // Fallback: line-by-line scanning
-//   let lastWasPrintf = false;
-//   let questionBuffer = null;
-
-//   for (let i = 0; i < lines.length; i++) {
-//     let line = lines[i].trim();
-//     if (line.startsWith("printf")) {
-//       questionBuffer = line.match(/printf\(["'](.+?)["']\)/);
-//       lastWasPrintf = true;
-//     } else if (line.startsWith("scanf")) {
-//       let lineDiv = document.createElement("div");
-
-//       if (!lastWasPrintf) {
-//         outputDiv.appendChild(document.createElement("br"));
-//       }
-
-//       if (questionBuffer) {
-//         let promptSpan = document.createElement("span");
-//         promptSpan.innerText = questionBuffer[1] + " ";
-//         lineDiv.appendChild(promptSpan);
-//         questionBuffer = null;
-//       }
-
-//       let inputSpan = document.createElement("span");
-//       inputSpan.contentEditable = "true";
-//       inputSpan.className = "user-input";
-//       inputSpan.onkeypress = function(event) {
-//         handleUserInput(event, this);
-//       };
-
-//       lineDiv.appendChild(inputSpan);
-//       outputDiv.appendChild(lineDiv);
-//       expectedInputs.push(inputSpan);
-
-//       lastWasPrintf = false;
-//     }
-//   }
-
-//   if (expectedInputs.length > 0) {
-//     waitingForInput = true;
-//     expectedInputs[0].focus();
-//   } else {
-//     sendCodeToCompiler(); // auto run if no scanf
-//   }
-// }
-
-// function handleUserInput(event, inputElement) {
-//   if (event.key === "Enter" && waitingForInput) {
-//     event.preventDefault();
-//     let inputText = inputElement.innerText.trim();
-//     if (inputText === "") {
-//       alert("請輸入資料後再按 Enter！");
-//       return;
-//     }
-
-//     userInputs.push(inputText);
-//     inputElement.contentEditable = "false";
-//     currentInputIndex++;
-
-//     if (currentInputIndex < expectedInputs.length) {
-//       outputDiv.appendChild(document.createElement("br"));
-//       setTimeout(() => {
-//         expectedInputs[currentInputIndex].focus();
-//       }, 50);
-//     } else {
-//       waitingForInput = false;
-//       sendCodeToCompiler();
-//     }
-//   }
-// }
-
-// async function sendCodeToCompiler() {
-//   const code = editor.getValue();
-//   const stdin = userInputs.join("\n");
-
-//   const response = await fetch("https://emkc.org/api/v2/piston/execute", {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json"
-//     },
-//     body: JSON.stringify({
-//       language: "c",
-//       version: "*",
-//       stdin: stdin,
-//       files: [
-//         {
-//           name: "main.c",
-//           content: code
-//         }
-//       ]
-//     })
-//   });
-
-//   const result = await response.json();
-//   let cleanOutput = "";
-
-//   if (result.run?.stdout) cleanOutput += result.run.stdout;
-//   if (result.run?.stderr) cleanOutput += `<br><span style='color:red'>${result.run.stderr}</span>`;
-//   if (result.compile?.stderr) cleanOutput += `<br><span style='color:orange'>${result.compile.stderr}</span>`;
-
-//   outputDiv.innerHTML += cleanOutput || "無輸出";
-// }
+}
 
 // Chat functions
 // function toggleChatBox() {
@@ -168,6 +49,38 @@ let currentInputIndex = 0;
 //   const chatBox = document.getElementById("chat-box");
 //   chatBox.classList.remove("active");
 // }
+
+
+
+
+// ✅ NEW: Function to switch between Output and Problems tabs
+function showTab(tab) {
+  const outputTab = document.getElementById("output");
+  const problemTab = document.getElementById("problems");
+  const terminalTab = document.getElementById("terminal");
+  const buttons = document.querySelectorAll(".tab-button");
+
+  if (tab === "output") {
+    outputTab.style.display = "block";
+    problemTab.style.display = "none";
+    terminalTab.style.display = "none";
+  } else if (tab === "problems") {
+    outputTab.style.display = "none";
+    problemTab.style.display = "block";
+    terminalTab.style.display = "none";
+  }else{
+    outputTab.style.display = "none";
+    problemTab.style.display = "none";
+    terminalTab.style.display = "block";
+  }
+
+  buttons.forEach(btn => btn.classList.remove("active"));
+  document.querySelector(`.tab-button[onclick="showTab('${tab}')"]`).classList.add("active");
+}
+
+
+
+
 
 let isDragging = false;
 const questionBox = document.getElementById('question-box');

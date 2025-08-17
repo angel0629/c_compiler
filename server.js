@@ -291,6 +291,108 @@ app.post("/test_example", async (req, res) => {
   }
 });
 
+// 即時語法偵測功能
+app.post("/api/check-syntax", async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) {
+      return res.status(400).json({ error: "No code provided" });
+    }
+
+    // 建立臨時檔案進行語法檢查
+    const tempId = Date.now().toString(36) + Math.random().toString(16).slice(2);
+    const tempDir = path.join("/tmp", `syntax-check-${tempId}`);
+    fs.mkdirSync(tempDir, { recursive: true });
+    
+    const srcPath = path.join(tempDir, "main.c");
+    fs.writeFileSync(srcPath, code);
+
+    // 使用 gcc 進行語法檢查（只檢查語法，不產生執行檔）
+    const result = await new Promise((resolve) => {
+      const gcc = spawn('gcc', ['-fsyntax-only', '-Wall', '-Wextra', srcPath], {
+        stdio: ['ignore', 'pipe', 'pipe']
+      });
+
+      let stderr = '';
+      gcc.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
+
+      gcc.on('close', (code) => {
+        // 清理臨時檔案
+        fs.rmSync(tempDir, { recursive: true, force: true });
+        
+        if (code === 0) {
+          resolve({ 
+            valid: true, 
+            errors: [], 
+            warnings: [],
+            message: "語法檢查通過" 
+          });
+        } else {
+          // 解析 gcc 錯誤訊息
+          const errors = parseGCCErrors(stderr);
+          resolve({ 
+            valid: false, 
+            errors: errors.errors,
+            warnings: errors.warnings,
+            message: "發現語法錯誤" 
+          });
+        }
+      });
+
+      gcc.on('error', (err) => {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+        resolve({ 
+          valid: false, 
+          errors: [{ line: 0, message: "編譯器錯誤: " + err.message }],
+          warnings: [],
+          message: "編譯器錯誤" 
+        });
+      });
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error("語法檢查錯誤:", error);
+    res.status(500).json({ 
+      valid: false, 
+      errors: [{ line: 0, message: "伺服器錯誤: " + error.message }],
+      warnings: [],
+      message: "伺服器錯誤" 
+    });
+  }
+});
+
+// 解析 GCC 錯誤訊息的輔助函數
+function parseGCCErrors(stderr) {
+  const errors = [];
+  const warnings = [];
+  
+  // GCC 錯誤訊息格式: filename:line:column: error: message
+  const lines = stderr.split('\n').filter(line => line.trim());
+  
+  for (const line of lines) {
+    const match = line.match(/main\.c:(\d+):(\d+):\s*(error|warning):\s*(.+)/);
+    if (match) {
+      const [, lineNum, column, type, message] = match;
+      const errorInfo = {
+        line: parseInt(lineNum),
+        column: parseInt(column),
+        message: message.trim()
+      };
+      
+      if (type === 'error') {
+        errors.push(errorInfo);
+      } else if (type === 'warning') {
+        warnings.push(errorInfo);
+      }
+    }
+  }
+  
+  return { errors, warnings };
+}
+
 // 繳交程式碼（與上面相同邏輯）
 app.post("/submit", async (req, res) => {
   try {

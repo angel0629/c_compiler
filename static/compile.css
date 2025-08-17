@@ -98,11 +98,31 @@ body {
     height: calc(50vh - 20px);
     overflow: hidden;
     border-radius: 10px;
-    border: 1px solid #ddd;
-    position: relative;
-    box-sizing: border-box;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   }
+  
+  /* 語法錯誤標記樣式 */
+  .ace_marker-layer .syntax-error {
+    background: linear-gradient(90deg, transparent 0%, transparent 50%, rgba(255, 0, 0, 0.3) 50%, rgba(255, 0, 0, 0.3) 100%);
+    position: absolute;
+    z-index: 20;
+  }
+  
+  .ace_marker-layer .syntax-warning {
+    background: linear-gradient(90deg, transparent 0%, transparent 50%, rgba(255, 165, 0, 0.3) 50%, rgba(255, 165, 0, 0.3) 100%);
+    position: absolute;
+    z-index: 20;
+  }
+  
+  /* 錯誤行背景高亮 */
+  .ace_error_line {
+    background-color: rgba(255, 0, 0, 0.1) !important;
+  }
+  
+  .ace_warning_line {
+    background-color: rgba(255, 165, 0, 0.1) !important;
+  }
+    
+ 
   
   #editor {
     position: absolute;

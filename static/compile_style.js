@@ -1,5 +1,6 @@
 // Initialize ACE Editor
 var editor = ace.edit("editor");
+window.editor = editor; // 設為全域變數
 editor.setTheme("ace/theme/xcode");
 editor.session.setMode("ace/mode/c_cpp");
 editor.setValue(`#include <stdio.h>\nint main() {\nchar name[100];\nprintf("請輸入你的名字: ");\nscanf("%s", name);\nprintf("你好, %s!", name);\nint age;\nprintf("請輸入你的年齡: ");\nscanf("%d", &age);\nprintf("age: %d!", age);\nreturn 0;\n}\n`);

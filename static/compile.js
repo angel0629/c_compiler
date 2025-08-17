@@ -61,6 +61,108 @@ function runCode() {
 
 
 
+// 語法檢查功能
+let syntaxCheckTimeout;
+
+function checkSyntax(code) {
+  clearTimeout(syntaxCheckTimeout);
+  
+  syntaxCheckTimeout = setTimeout(async () => {
+    try {
+      const response = await fetch('/api/check-syntax', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      
+      const result = await response.json();
+      displaySyntaxResults(result);
+    } catch (error) {
+      console.error('語法檢查錯誤:', error);
+    }
+  }, 500); // 延遲 500ms 避免過於頻繁的請求
+}
+
+function displaySyntaxResults(result) {
+  const problemOutput = document.getElementById('problem_output');
+  
+  if (result.valid) {
+    problemOutput.innerHTML = '<div style="color: green;">✅ 語法檢查通過</div>';
+    // 清除編輯器中的錯誤標記
+    clearEditorMarkers();
+  } else {
+    let html = '<div style="color: red;">❌ 發現語法錯誤：</div>';
+    
+    // 顯示錯誤
+    if (result.errors && result.errors.length > 0) {
+      html += '<div style="margin-top: 10px;"><strong>錯誤：</strong></div>';
+      result.errors.forEach(error => {
+        html += `<div style="color: red; margin-left: 10px;">第 ${error.line} 行: ${error.message}</div>`;
+      });
+    }
+    
+    // 顯示警告
+    if (result.warnings && result.warnings.length > 0) {
+      html += '<div style="margin-top: 10px;"><strong>警告：</strong></div>';
+      result.warnings.forEach(warning => {
+        html += `<div style="color: orange; margin-left: 10px;">第 ${warning.line} 行: ${warning.message}</div>`;
+      });
+    }
+    
+    problemOutput.innerHTML = html;
+    
+    // 在編輯器中標記錯誤
+    markErrorsInEditor(result.errors, result.warnings);
+  }
+}
+
+// 在編輯器中標記錯誤和警告
+function markErrorsInEditor(errors, warnings) {
+  clearEditorMarkers();
+  
+  if (!window.editor) return;
+  
+  // 標記錯誤（紅色波浪線）
+  if (errors) {
+    errors.forEach(error => {
+      const range = new ace.Range(error.line - 1, 0, error.line - 1, 1);
+      const marker = window.editor.session.addMarker(range, 'syntax-error', 'text');
+      error.marker = marker;
+    });
+  }
+  
+  // 標記警告（黃色波浪線）
+  if (warnings) {
+    warnings.forEach(warning => {
+      const range = new ace.Range(warning.line - 1, 0, warning.line - 1, 1);
+      const marker = window.editor.session.addMarker(range, 'syntax-warning', 'text');
+      warning.marker = marker;
+    });
+  }
+}
+
+// 清除編輯器中的標記
+function clearEditorMarkers() {
+  if (window.editor) {
+    window.editor.session.removeAllMarkers();
+  }
+}
+
+// 設定編輯器變更監聽
+function setupSyntaxChecking() {
+  // 等待編輯器初始化完成
+  setTimeout(() => {
+    if (window.editor) {
+      window.editor.getSession().on('change', () => {
+        const code = window.editor.getValue();
+        if (code.trim()) {
+          checkSyntax(code);
+        }
+      });
+    }
+  }, 100);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   // 現在確定整個頁面元素都已載入，可以安全使用 document.getElementById
   document.getElementById('runBtn').addEventListener('click', () => {
@@ -70,6 +172,9 @@ window.addEventListener('DOMContentLoaded', () => {
     term.clear();
     runCode();
   });
+  
+  // 設定語法檢查
+  setupSyntaxChecking();
 });
 
 

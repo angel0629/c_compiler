@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主機： 127.0.0.1
--- 產生時間： 2025-08-03 05:55:12
--- 伺服器版本： 10.4.28-MariaDB
--- PHP 版本： 8.2.4
+-- 產生時間： 2025-08-18 10:56:12
+-- 伺服器版本： 10.4.32-MariaDB
+-- PHP 版本： 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -20,6 +20,45 @@ SET time_zone = "+00:00";
 --
 -- 資料庫： `judge_questions`
 --
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `chat`
+--
+
+CREATE TABLE `chat` (
+  `c_id` int(11) NOT NULL,
+  `message` text NOT NULL,
+  `u_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- 傾印資料表的資料 `chat`
+--
+
+INSERT INTO `chat` (`c_id`, `message`, `u_id`) VALUES
+(1, 'test db', 1);
+
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `code`
+--
+
+CREATE TABLE `code` (
+  `code_id` int(11) NOT NULL,
+  `code` text NOT NULL,
+  `q_id` int(11) NOT NULL,
+  `u_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- 傾印資料表的資料 `code`
+--
+
+INSERT INTO `code` (`code_id`, `code`, `q_id`, `u_id`) VALUES
+(1, '#include<stdio.h>\r\n#include<stdlib.h>\r\n\r\nint main(){\r\n    char name[100];\r\n    scanf(\"%s\", name);\r\n    printf(\"hello, %s\", name);\r\n    //from db\r\n    return 0;\r\n}', 1, 1);
 
 -- --------------------------------------------------------
 
@@ -140,6 +179,18 @@ INSERT INTO `user` (`uid`, `usrname`, `pwd`, `email`, `usr_group`) VALUES
 --
 
 --
+-- 資料表索引 `chat`
+--
+ALTER TABLE `chat`
+  ADD PRIMARY KEY (`c_id`);
+
+--
+-- 資料表索引 `code`
+--
+ALTER TABLE `code`
+  ADD PRIMARY KEY (`code_id`);
+
+--
 -- 資料表索引 `example`
 --
 ALTER TABLE `example`
@@ -174,6 +225,18 @@ ALTER TABLE `user`
 --
 -- 在傾印的資料表使用自動遞增(AUTO_INCREMENT)
 --
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `chat`
+--
+ALTER TABLE `chat`
+  MODIFY `c_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- 使用資料表自動遞增(AUTO_INCREMENT) `code`
+--
+ALTER TABLE `code`
+  MODIFY `code_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- 使用資料表自動遞增(AUTO_INCREMENT) `example`

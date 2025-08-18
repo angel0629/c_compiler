@@ -24,7 +24,7 @@ body {
   justify-content: flex-end;
   gap: 10px;
 }
-.execute-button, .submit-button {
+.execute-button, .submit-button, .save-button, .trace-button {
   border-radius: 10px;
   padding: 0px 10px;
   font-size: 15px;
@@ -37,6 +37,12 @@ body {
 }
 .submit-button {
   background-color: #fd79a8;
+}
+.save-button {
+  background-color: #8bfd79;
+}
+.trace-button {
+  background-color: #fdfb79;
 }
 button:hover {
   transform: translateY(-2px);

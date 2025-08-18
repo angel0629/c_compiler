@@ -219,6 +219,52 @@ app.get("/code_judge_final", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "code_judge_final.html"));
 });
 
+//抓取使用者再資料庫的程式碼
+app.post('/api/user-code', async (req, res) => {
+  const q_id = req.body.q_id;
+  const user = req.session.user;
+  if (!user || !user.uid) {
+    return res.status(401).json({ error: "未登入" });
+  }
+  try {
+    const rows = await db.userInputCode(user.uid, q_id);
+    if (rows.length > 0) {
+      res.json({ code: rows[0].code });
+    } else {
+      res.json({ code: "" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: "資料庫錯誤" });
+  }
+});
+
+// 儲存使用者程式碼
+app.post('/api/save-code', async (req, res) => {
+  const user = req.session.user;
+  if (!user || !user.uid) {
+    return res.status(401).json({ error: "未登入" });
+  }
+  const code = req.body.code;
+  const q_id = req.body.q_id;
+  if (!code || !q_id) {
+    return res.status(400).json({ error: "缺少程式碼或題號" });
+  }
+  try {
+    // 先查有沒有
+    const rows = await db.getUserCodeByUidQid(user.uid, q_id);
+    if (rows.length > 0) {
+      // 有就更新
+      await db.updateUserCode(code, user.uid, q_id);
+    } else {
+      // 沒有就新增
+      await db.insertUserCode(code, user.uid, q_id);
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "資料庫錯誤" });
+  }
+});
+
 // 根據題目 id 取得題目與範例
 app.get("/api/problem/:id", async (req, res) => {
   const q_id = req.params.id;

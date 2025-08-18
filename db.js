@@ -53,5 +53,26 @@ module.exports = {
         [username, password]
       );
       return rows[0] || null;  // null or user info
-    }
+    },
+    //使用者的 code
+    userInputCode: async (u_id, q_id) => { 
+      const [rows] = await promisePool.query('SELECT code FROM `code` WHERE u_id=? AND q_id=?;',[u_id, q_id]);
+      return rows;
+    },
+
+    //儲存程式碼
+    //更新
+    updateUserCode: async (code, uid, q_id) => {
+      return promisePool.query('UPDATE code SET code=? WHERE u_id=? AND q_id=?', [code, uid, q_id]);
+    },
+    //新增
+    insertUserCode: async (code, uid, q_id) => {
+      return promisePool.query('INSERT INTO code (code, u_id, q_id) VALUES (?, ?, ?)', [ code, uid, q_id]);
+    },
+    //查詢是否已經存在
+    getUserCodeByUidQid: async (uid, q_id) => {
+    const [rows] = await promisePool.query(
+    'SELECT * FROM code WHERE u_id=? AND q_id=?',[uid, q_id]);
+    return rows;
+    },
 };

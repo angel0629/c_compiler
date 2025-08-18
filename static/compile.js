@@ -178,3 +178,28 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 
+//儲存 code
+// 取得網址參數中的 q_id
+function getQidFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('q_id');
+}
+function saveCode() {
+  const code = editor.getValue();
+  const q_id = getQidFromUrl(); // 取得目前題目的 q_id
+  //console.log('收到儲存請求:', { q_id, code });
+  fetch('/api/save-code', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, q_id })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert('程式碼已儲存！');
+    } else {
+      alert('儲存失敗：' + (data.error || '未知錯誤'));
+    }
+  })
+  .catch(() => alert('儲存失敗，請稍後再試'));
+}

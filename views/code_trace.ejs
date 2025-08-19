@@ -23,8 +23,25 @@
       <h2 class="section-title">記憶體配置模擬圖</h2>
     
       <div class="section-block">
-        <h4>輸入說明</h4>
-        <p id="input_info" class="text-block"></p>
+        <h2>分析結果</h2>
+        <ul>
+          <% analysis.forEach(item => { %>
+            <li>
+              第 <%= item.line_no %> 行：
+              <%= item.meaning %>，
+              類型：<%= item.type %>
+              <% if (item.varible_name) { %>
+                ，變數：<%= item.varible_name %>
+              <% } %>
+              <% if (item.value !== null) { %>
+                ，值：<%= item.value %>
+              <% } %>
+              <% if (item.size !== null) { %>
+                ，大小：<%= item.size %>
+              <% } %>
+            </li>
+          <% }) %>
+        </ul>
       </div>
     
       <div class="section-block">
@@ -40,7 +57,7 @@
     <div class="right-side">
       <div id="editor-container">
         <div id="editor"><textarea id="codeInput" ><%= code %></textarea></div>
-        
+        <!-- <div id="editor"><%= code %></div> -->
       </div>
 
       <div id="output-container">
@@ -68,6 +85,9 @@
   </div>
 
 
+<!-- <script>
+  window.serverCode = `<%- code %>`;
+</script> -->
 <script src="/trace.js"></script>
 </body>
 </html>

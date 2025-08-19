@@ -5,6 +5,8 @@ FROM node:18-slim
 WORKDIR /app
 
 # 步驟 3：安裝 GCC 編譯器和相關工具
+RUN apt-get update && apt-get install -y python3 && \
+    ln -s /usr/bin/python3 /usr/bin/python
 RUN apt-get update && apt-get install -y gcc make ca-certificates curl gnupg \
  && install -m 0755 -d /etc/apt/keyrings \
  && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \

@@ -2,7 +2,7 @@
 var editor = ace.edit("editor");
 editor.setTheme("ace/theme/xcode");
 editor.session.setMode("ace/mode/c_cpp");
-editor.setValue(`#include <stdio.h>\nint main() {\nchar name[100];\nprintf("請輸入你的名字: ");\nscanf("%s", name);\nprintf("你好, %s!", name);\nint age;\nprintf("請輸入你的年齡: ");\nscanf("%d", &age);\nprintf("age: %d!", age);\nreturn 0;\n}\n`);
+editor.setValue(`#include <stdio.h>\n\nint main() {              //我是註解\n\tint name[5];\n\tint phone_num [3];\n\tprintf("hello user");\n\tint age = 3;\n \t//我是註解\n \tint score=90;\n\tprintf("age: %d!", age);\n\treturn 0;\n}\n`);
 editor.clearSelection();
 editor.setFontSize(14);
 editor.setOptions({

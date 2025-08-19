@@ -17,7 +17,9 @@
     "express-session": "^1.18.2",
     "mysql2": "^3.14.1",
     "openai": "^5.10.2",
+    "python-shell": "^5.0.0",
     "uuid": "^11.1.0",
+    "websocket": "^1.0.35",
     "ws": "^8.18.3"
   },
   "description": ""

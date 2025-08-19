@@ -3,6 +3,7 @@ const express = require("express");
 const db = require('./db'); // db.js 的檔案
 const fs = require("fs");
 const path = require("path");
+const { PythonShell } = require('python-shell');
 
 //compiler 測試
 const { WebSocketServer } = require('ws');
@@ -138,18 +139,75 @@ app.get("/user_info", (req, res)=> {
     res.render("user_info", { user });
 });
 
-// 程式追蹤
-app.post('/receive_code',(req,res) =>{
-    const code = req.body.code
-    req.session.traceCode = code;
-    // console.log(`trace receive${code}`)
-    res.redirect('/trace'); 
-})
 
-app.get('/trace', (req, res) => {
-    const code = req.session.traceCode || "";
-    res.render("code_trace", { code });
+
+// 程式追蹤
+app.post('/receive_code', (req, res) => {
+  const code = req.body.code ?? '';
+  let soruce_code = code;
+  console.log(soruce_code);
+
+  const workDir = __dirname; // 確保與 analyzer.py、code.txt 同目錄
+  const filePath = path.join(workDir, 'code.txt');
+  fs.writeFileSync(filePath, code, 'utf8');
+
+  const options = {
+    mode: 'text',
+    pythonPath: 'python3',      // 關鍵：明確用 python3
+    pythonOptions: ['-u'],      // 關鍵：取消 stdout 緩衝
+    scriptPath: workDir,        // 讓 'analyzer.py' 相對路徑可用
+    cwd: workDir,               // 讓 Python 在 /app 執行，讀得到 ./code.txt
+    args: []
+  };
+  const pyshell = new PythonShell('analyzer.py', options);
+
+  pyshell.on('message', (m) => {
+    console.log('[PY STDOUT]', m);
+    lastMessage = m;
   });
+
+  pyshell.on('stderr', (m) => {
+    console.error('[PY STDERR]', m);
+  });
+
+  pyshell.end((err, code, signal) => {
+    if (err) {
+      console.error('🐍 Python 錯誤：', err);
+      return res.status(500).json({ error: 'Python 分析失敗', detail: String(err) });
+    }
+
+    console.log('Python exit code:', code, 'signal:', signal);
+
+    if (!lastMessage) {
+      return res.status(500).send('⚠️ Python 沒有回傳 JSON');
+    }
+
+    try {
+      const analysis = JSON.parse(lastMessage);
+      // ✅ 把程式碼與分析資料丟給 ejs
+      res.redirect(
+        '/code_trace?code=' + encodeURIComponent(soruce_code) +
+        '&analysis=' + encodeURIComponent(JSON.stringify(analysis))
+      );
+    } catch (e) {
+      console.error('🧩 JSON 解析錯誤：', e, '原始訊息=', lastMessage);
+      return res.status(500).send('Python 傳回資料格式錯誤');
+    }
+  });
+});
+
+app.get('/code_trace', (req, res) => {
+  try {
+    const code = req.query.code || '';
+    console.log(code,'32979873249732974')
+    const analysis = JSON.parse(req.query.analysis || '[]');
+    res.render('code_trace', { code, analysis });
+  } catch (err) {
+    console.error('解析錯誤：', err);
+    res.status(400).send('無法解析分析資料');
+  }
+});
+
 
 // 登入功能
 app.get("/login_page", (req, res)=> {

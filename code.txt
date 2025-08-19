@@ -1,0 +1,12 @@
+#include <stdio.h>
+
+int main() {              //我是註解
+	int name[5];
+	int phone_num [3];
+	printf("hello user");
+	int age = 3;
+ 	//我是註解
+ 	int score=90;
+	printf("age: %d!", age);
+	return 0;
+}

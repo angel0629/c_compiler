@@ -57,12 +57,10 @@ async function home_page(){
 // 追蹤程式
 async function traceCode() {
   const code = editor.getValue();
-
+  // console.log(code)
   const res = await fetch('/receive_code', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ code })
   });
 
@@ -70,3 +68,5 @@ async function traceCode() {
     window.location.href = res.url;
   }
 }
+
+

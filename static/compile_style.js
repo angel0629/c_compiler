@@ -146,3 +146,139 @@ window.addEventListener('mouseup', () => {
   isDraggingOutputTop = false;
   document.body.style.cursor = 'default';
 });
+
+// =========================
+// Tree-sitter 語法偵測整合
+// =========================
+let tsParser = null;
+let tsLangC = null;
+let tsReady = false;
+
+function debounce(fn, delay) {
+  let t = null;
+  return function(...args) {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+async function initTreeSitter() {
+  try {
+    if (!window.TreeSitter) return;
+    await window.TreeSitter.init();
+    // 嘗試多個可用路徑，避免 404
+    const candidates = [
+      '/tree-sitter-c/tree-sitter-c.wasm',
+      '/tree-sitter-c.wasm',
+      'tree-sitter-c/tree-sitter-c.wasm'
+    ];
+    let lastErr = null;
+    for (const url of candidates) {
+      try {
+        tsLangC = await window.TreeSitter.Language.load(url);
+        break;
+      } catch (e) {
+        lastErr = e;
+      }
+    }
+    if (!tsLangC) throw lastErr || new Error('language wasm not found');
+    tsParser = new window.TreeSitter();
+    tsParser.setLanguage(tsLangC);
+    tsReady = true;
+    // 初次檢查
+    checkSyntax();
+  } catch (err) {
+    const problemDiv = document.getElementById('problem_output');
+    if (problemDiv) {
+      problemDiv.textContent = `Tree-sitter 初始化失敗: ${err?.message || err}`;
+    }
+  }
+}
+
+function hasErrorAncestor(node) {
+  let p = node.parent;
+  while (p) {
+    if (p.type === 'ERROR') return true;
+    p = p.parent;
+  }
+  return false;
+}
+
+function collectSyntaxErrors(node, out) {
+  // 只收集真正的 ERROR 節點，移除錯誤的 missing token 檢查
+  if (node.type === 'ERROR' && !hasErrorAncestor(node)) {
+    const line = (node.startPosition?.row ?? 0) + 1;
+    const col = (node.startPosition?.column ?? 0) + 1;
+    out.push({ line, col, message: '語法錯誤' });
+  }
+  
+  // 移除錯誤的 missing token 檢查，避免誤報正確語法
+  // const missingPunctuations = new Set([';', ')', '}', ']']);
+  // if (node.isMissing && missingPunctuations.has(node.type) && !hasErrorAncestor(node)) {
+  //   const line = (node.startPosition?.row ?? 0) + 1;
+  //   const col = (node.startPosition?.column ?? 0) + 1;
+  //   out.push({ line, col, message: `缺少「${node.type}」` });
+  // }
+  
+  const childCount = node.childCount || 0;
+  for (let i = 0; i < childCount; i++) {
+    collectSyntaxErrors(node.child(i), out);
+  }
+}
+
+const checkSyntax = debounce(() => {
+  const problemDiv = document.getElementById('problem_output');
+  if (!problemDiv) return;
+  if (!tsReady || !tsParser) {
+    problemDiv.textContent = 'Tree-sitter 未就緒';
+    return;
+  }
+
+  const code = editor.getValue();
+  try {
+    const tree = tsParser.parse(code);
+    // 收集錯誤並去重（依行欄位）
+    const errors = [];
+    collectSyntaxErrors(tree.rootNode, errors);
+    const seen = new Set();
+    const unique = [];
+    for (const e of errors) {
+      const k = `${e.line}:${e.col}`;
+      if (!seen.has(k)) { seen.add(k); unique.push(e); }
+    }
+
+    // 顯示於 Problems pane
+    if (unique.length === 0) {
+      problemDiv.innerHTML = '✓ 語法檢查通過';
+    } else {
+      const lines = ['語法檢查結果:'];
+      unique.forEach(e => {
+        lines.push(`第 ${e.line} 行, 第 ${e.col} 欄: ${e.message}`);
+      });
+      problemDiv.textContent = lines.join('\n');
+    }
+
+    // 同步到 ACE 註解列（Editor gutter）
+    const annotations = unique.map(e => ({
+      row: e.line - 1,
+      column: e.col - 1,
+      text: e.message,
+      type: 'error'
+    }));
+    editor.session.setAnnotations(annotations);
+  } catch (err) {
+    problemDiv.textContent = `解析失敗: ${err?.message || err}`;
+  }
+}, 300);
+
+// 綁定編輯器變更 → 偵測
+editor.session.on('change', () => {
+  checkSyntax();
+});
+
+// 頁面載入後初始化 Tree-sitter
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initTreeSitter);
+} else {
+  initTreeSitter();
+}

@@ -108,6 +108,12 @@ function parseSize(v) {
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "static")));
+// 讓前端能載入 tree-sitter-c 的 wasm 與相關檔案
+app.use('/tree-sitter-c', express.static(path.join(__dirname, 'tree-sitter-c')));
+// 兼容路徑：直接提供 wasm 根路徑別名，避免前端路徑出錯
+app.get('/tree-sitter-c.wasm', (req, res) => {
+  res.sendFile(path.join(__dirname, 'tree-sitter-c', 'tree-sitter-c.wasm'));
+});
 app.use(session({                       
     secret: "your-secret-key",
     resave: false,

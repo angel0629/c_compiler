@@ -86,6 +86,127 @@ async function runOneTestInContainer(jobDir, timeoutSec = 2) {
   return { stdout: stdout.trim(), stderr: stderr.trim(), verdict };
 }
 
+async function compileInContainer(jobDir, timeoutSec = 5) {
+  const name = `cmp-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
+  const args = [
+    'run','--name',name,
+    '--network','none',
+    '--read-only',
+    '--cap-drop=ALL',
+    '--security-opt','no-new-privileges',
+    '--pids-limit', LIMITS.PIDS,
+    '--cpus', LIMITS.CPUS,
+    '--memory', LIMITS.MEM,
+    '--memory-swap', LIMITS.MEM,
+    '--ulimit', `nofile=${LIMITS.NOFILE}:${LIMITS.NOFILE}`,
+    '--ulimit', `fsize=${parseSize(LIMITS.FSIZE)}`,
+    '--tmpfs', '/tmp:rw,nosuid,nodev,size=64m',
+    '--workdir', `/work/${path.basename(jobDir)}`,
+    // 編譯要能寫出 main，所以這裡用 rw 掛載
+    '-v', 'judge_jobs:/work',
+    // 為避免 volume 擁有者造成 Permission denied，編譯用 root
+    '-u', '0:0',
+    // 直接用官方 gcc 映像
+    'gcc:13-bookworm', 'bash','-lc',
+    `timeout ${timeoutSec}s gcc main.c -O2 -s -o main`
+  ];
+
+  const child = spawn('docker', args, { stdio: ['ignore','pipe','pipe'] });
+  let stdout = '', stderr = '';
+  child.stdout.on('data', d => stdout += d.toString());
+  child.stderr.on('data', d => stderr += d.toString());
+
+  const wallMs = Math.max(LIMITS.WALL_MS, timeoutSec * 1000 + 300);
+  let killedByWall = false;
+  const wallTimer = setTimeout(() => { killedByWall = true; spawn('docker',['kill',name]); }, wallMs);
+
+  const exitMeta = await new Promise(r => {
+    child.on('error', err => r({ code: -1, error: err }));
+    child.on('close', (code, signal) => r({ code, signal }));
+  });
+  clearTimeout(wallTimer);
+
+  const oomKilled = await sh(`docker inspect --format '{{.State.OOMKilled}}' ${name}`).catch(()=> 'false');
+  await sh(`docker rm -f ${name}`).catch(()=>{});
+
+  let verdict = 'OK';
+  if (oomKilled.trim() === 'true') verdict = 'MLE';
+  else if (killedByWall)         verdict = 'TLE';
+  else if (exitMeta.code === 124) verdict = 'TLE';  // GNU timeout
+  else if (exitMeta.code !== 0)   verdict = 'RE';   // 你要顯示「CE」也可以：verdict='CE'
+
+  return { stdout: stdout.trim(), stderr: stderr.trim(), verdict };
+}
+
+// 互動執行（WebSocket）— 在 Docker 容器內跑，沿用同一組資源限制
+async function runInteractiveInContainer(jobDir, ws, timeoutSec = 30) {
+  const name = `repl-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
+  const args = [
+    'run', '--name', name,
+    '--network', 'none',
+    '--read-only',
+    '--cap-drop=ALL',
+    '--security-opt', 'no-new-privileges',
+    '--pids-limit', LIMITS.PIDS,
+    '--cpus', LIMITS.CPUS,
+    '--memory', LIMITS.MEM,           // 有設 --memory 時，超限會變 OOMKilled 可由 inspect 判斷
+    '--memory-swap', LIMITS.MEM,
+    '--ulimit', `nofile=${LIMITS.NOFILE}:${LIMITS.NOFILE}`,
+    '--ulimit', `fsize=${parseSize(LIMITS.FSIZE)}`,
+    '--tmpfs', '/tmp:rw,noexec,nosuid,nodev,size=16m',
+    '--workdir', `/work/${path.basename(jobDir)}`,
+    '-v', 'judge_jobs:/work:ro',      // 跟 judge 相同：唯讀掛載 /jobs
+    '-u', '1000:1000',
+    // 互動模式要 -i，但不要 -t（TTY），這樣 stdin 可直接寫入
+    '-i', 'debian:bookworm-slim', 'bash', '-lc',
+    // 用 stdbuf 讓 stdout 不中途緩衝；此處不包 coreutils timeout，牆鐘由外層 setTimeout 控管
+    'stdbuf -o0 ./main'
+  ];
+
+  const child = spawn('docker', args, { stdio: ['pipe', 'pipe', 'pipe'] });
+
+  // 將容器輸出轉給瀏覽器
+  child.stdout.on('data', d => ws.readyState === 1 && ws.send(d.toString()));
+  child.stderr.on('data', d => ws.readyState === 1 && ws.send(d.toString()));
+
+  // 把使用者在 xterm 的輸入寫進容器 stdin
+  const onWS = msg => child.stdin.write(msg);
+  ws.on('message', onWS);
+
+  // --- 單一路徑結束：避免你看到的「OK」後又多一行 [TLE] ---
+  let ended = false;
+  const end = async (tag = '') => {
+    if (ended) return;
+    ended = true;
+    clearTimeout(wallTimer);
+    ws.off('message', onWS);
+
+    // 查 OOMKilled（若為 true 就覆寫成 MLE）
+    let tag2 = tag;
+    try {
+      const oom = await sh(`docker inspect --format '{{.State.OOMKilled}}' ${name}`);
+      if (oom.trim() === 'true') tag2 = 'MLE';
+    } catch {}
+
+    await sh(`docker rm -f ${name}`).catch(()=>{});
+    if (ws.readyState === 1) ws.send(`\n===[程式結束 ${tag2}]===\n`);
+  };
+
+  // 子行程結束（若被我們外部 kill，Linux 常見 137=128+9 可視情況想轉成 TLE）
+  child.on('close', code => {
+    // 這裡沒有用到內層 `timeout`，若是我們的牆鐘 kill，end 會先被呼叫
+    end(code === 137 ? 'TLE' : '');   // 137 常見於收到 KILL(9)。GNU timeout 逾時則會回 124。:contentReference[oaicite:0]{index=0}
+  });
+  child.on('error', () => end('ERR'));
+
+  // 牆鐘時間（比 judge 的 LIMITS.WALL_MS 邏輯一致）
+  const wallTimer = setTimeout(() => {
+    // 逾時就殺容器 → child 'close' 會隨後觸發，但我們保險直接標記 TLE
+    sh(`docker kill ${name}`).catch(()=>{});
+    end('TLE');
+  }, Math.max(timeoutSec * 1000, LIMITS.WALL_MS));
+}
+
 function sh(cmd) {
   return new Promise((res, rej) => {
     const p = spawn('bash', ['-lc', cmd], { stdio: ['ignore','pipe','pipe'] });
@@ -495,35 +616,33 @@ app.post('/save', (req, res) => {
 const server = http.createServer(app); // 建立 HTTP server (server 連線問題)
 const wss = new WebSocketServer({ server, path: '/ws' });
 
-wss.on('connection', (ws) => {
+wss.on('connection', async (ws) => {
   console.log('✅ WebSocket client connected');
 
-  const compile = spawn('gcc', ['main.c', '-o', 'main']);
+  // 每次連線開一個 job 目錄，把 /app/main.c 複製進去
+  const jobId = Date.now().toString(36) + Math.random().toString(16).slice(2);
+  const jobDir = path.join('/jobs', jobId);
+  fs.mkdirSync(jobDir, { recursive: true });
+  try { fs.copyFileSync('main.c', path.join(jobDir, 'main.c')); } catch (e) {
+    ws.send('找不到 main.c，請先按「執行程式」或儲存程式碼。\n');
+    ws.close();
+    return;
+  }
 
-  compile.stderr.on('data', (data) => {
-    ws.send(data.toString());
-  });
+  // 在受限容器裡編譯
+  const r = await compileInContainer(jobDir, 10);
+  if (r.stdout) ws.send(r.stdout + '\n');
+  if (r.stderr) ws.send(r.stderr + '\n');
 
-  compile.on('close', (code) => {
-    if (code !== 0) {
-      ws.send("\n❌ 編譯失敗，code: ${code}");
-      return;
-    }
+  if (r.verdict !== 'OK') {
+    ws.send(`[${r.verdict}] 編譯未通過\n`);
+    ws.close();
+    return;
+  }
+  ws.send('✅ 編譯成功\n');
 
-    const run = spawn('stdbuf', ['-o0', './main'], { shell: true });
-
-    run.stdout.on('data', (data) => ws.send(data.toString()));
-    run.stderr.on('data', (data) => ws.send(data.toString()));
-
-    ws.on('message', (msg) => {
-      console.log('收到訊息:', msg.toString());  // 加上這行看有沒有收到
-      run.stdin.write(msg);
-    });
-
-    run.on('close', (code) => {
-      ws.send("===[程式結束]===\n");
-    });
-  });
+  // 編譯成功 → 受限容器互動執行（stdin/stdout 綁到此 ws）
+  await runInteractiveInContainer(jobDir, ws, 30);
 });
 
 server.listen(PORT,'0.0.0.0', () => {

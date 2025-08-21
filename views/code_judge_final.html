@@ -26,6 +26,15 @@
     </div>
   </div>
   <div class="button-row">
+    <!-- AI 自動偵測開關 -->
+    <div id="ai_toggle_wrap" style="margin:8px 0;">
+      <label class="ai-switch">
+        <input type="checkbox" id="aiToggle">
+        <span class="ai-slider"></span>
+      </label>
+      <span style="margin-left:8px;">AI 即時偵測</span>
+    </div>
+
     <button class="trace-button" onclick="traceCode()">程式追蹤</button>
     <button class="save-button" onclick="saveCode()">儲存程式</button>
     <button class="execute-button" id="runBtn" onclick="showTab('terminal')">執行程式</button>
@@ -100,6 +109,7 @@
   <script src="/chat.js"></script>
   <script src="/compile.js"></script>
   <script src="/button.js"></script>
+  <script src="/ai_detection.js"></script>
   <!-- <script src="/trace.js"></script> -->
 </body>
 </html>

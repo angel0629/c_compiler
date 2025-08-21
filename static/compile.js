@@ -151,38 +151,52 @@ function displaySyntaxResults(result) {
     markErrorsInEditor(result.errors, result.warnings);
   }
 }
+let syntaxMarkers = [];
 
-function markErrorsInEditor(errors, warnings) {
+function clearEditorMarkers() {
+  if (!window.editor) return;
+  const sess = window.editor.session;
+  // 沒有 addMarker 就不需要移除；保留這段也可
+  syntaxMarkers.forEach(id => { try { sess.removeMarker(id); } catch (_) {} });
+  syntaxMarkers = [];
+  sess.setAnnotations([]);  // 清掉舊的 gutter 標記
+}
+const Range = ace.require('ace/range').Range; // 要先引用 Range
+
+// 取出行號裡的數字並轉 0-based row
+function toRow(lineLike) {
+  // 把任何格式的行號（"10", "第 10 行", "10:", "line 10"）都抓出數字
+  const m = String(lineLike ?? '').match(/\d+/);
+  const n = m ? parseInt(m[0], 10) : 1;     // 沒抓到就當第 1 行
+  return Math.max(0, n - 1);                 // 轉成 0-based，且不小於 0
+}
+
+function markErrorsInEditor(errors = [], warnings = []) {
   clearEditorMarkers();
   if (!window.editor) return;
 
-  // 若你的環境需要 ace.require，請改以下兩行用 require 取 Range 物件
-  // const Range = ace.require("ace/range").Range;
-  // 你先前是用 new ace.Range()，沿用即可：
-  const useRange = (s, e) => new ace.Range(s, 0, s, 1);
+  const sess = window.editor.session;
+  const ann = [];
 
-  if (errors) {
-    errors.forEach(error => {
-      const range = useRange(error.line - 1);
-      const marker = window.editor.session.addMarker(range, 'syntax-error', 'text');
-      error.marker = marker;
-    });
-  }
+  const addOne = (item, type, css) => {
+    const row = toRow(item.line);            // ✅ 用可靠的行號轉換
 
-  if (warnings) {
-    warnings.forEach(warning => {
-      const range = useRange(warning.line - 1);
-      const marker = window.editor.session.addMarker(range, 'syntax-warning', 'text');
-      warning.marker = marker;
-    });
-  }
+    // gutter 顯示（這個決定左邊行號的紅/黃圖示）
+    ann.push({ row, column: 0, text: item.message || '', type });
+
+    // 如果你要整行淡色背景，建議用 fullLine（不需要欄位範圍也能對齊）
+    const Range = ace.require('ace/range').Range;
+    const range = new Range(row, 0, row, Infinity);
+    const id = sess.addMarker(range, css, 'fullLine');
+    syntaxMarkers.push(id);
+  };
+
+  (errors   || []).forEach(e => addOne(e, 'error',   'ace_error_line'));//未成功
+  (warnings || []).forEach(w => addOne(w, 'warning', 'ace_warning_line')); //未成功
+
+  sess.setAnnotations(ann);
 }
 
-function clearEditorMarkers() {
-  if (window.editor) {
-    window.editor.session.removeAllMarkers();
-  }
-}
 
 function setupSyntaxChecking() {
   setTimeout(() => {

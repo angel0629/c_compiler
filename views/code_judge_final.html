@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>C 語言線上編譯器</title>
+  <title>C 語言線上 AI 互動學習平台</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
@@ -65,13 +65,16 @@
       </div>
       <div id="output-container">
         <div class="output-tabs">
+          <!-- 要更改內容去 compile_style.js 、style.css-->
           <button class="tab-button active" onclick="showTab('terminal')">Terminal</button>
           <button class="tab-button" onclick="showTab('output')">Judge 結果</button>
           <button class="tab-button" onclick="showTab('problems')">偵測問題</button>
+          <button class="tab-button" onclick="showTab('problems_ai')">AI 即時偵測</button>
         </div>
         <div id="terminal"></div>
         <div id="output" style="display:none;"><pre id="judge_output"></pre></div>
         <div id="problems" style="display:none;"><pre id="problem_output"></pre></div>
+        <div id="problems_ai" style="display:none;"><pre id="problem_ai_output"></pre></div>
       </div>
     </div>
   </div>

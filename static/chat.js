@@ -134,9 +134,9 @@ if (typeof hljs !== "undefined") {
 }
 
 // 支援 Enter 鍵發送訊息
-document.getElementById("userInput").addEventListener("keypress", (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-});
+// document.getElementById("userInput").addEventListener("keypress", (e) => {
+//   if (e.key === "Enter" && !e.shiftKey) {
+//     e.preventDefault();
+//     sendMessage();
+//   }
+// });

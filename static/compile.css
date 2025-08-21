@@ -206,7 +206,7 @@
     z-index: 20;
   }
   
-  /* 錯誤行背景高亮*/
+  /*背景整行標示失敗*/
   /*
   .ace_error_line {
     background-color: rgba(255, 0, 0, 0.1) !important;

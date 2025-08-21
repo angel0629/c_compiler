@@ -81,21 +81,30 @@ async function sendCodeToCompiler() {
 function showTab(tab) {
   const outputTab = document.getElementById("output");
   const problemTab = document.getElementById("problems");
+  const problem_aiTab = document.getElementById("problems_ai");
   const terminalTab = document.getElementById("terminal");
   const buttons = document.querySelectorAll(".tab-button");
 
   if (tab === "output") {
     outputTab.style.display = "block";
     problemTab.style.display = "none";
+    problem_aiTab.style.display = "none";
     terminalTab.style.display = "none";
   } else if (tab === "problems") {
     outputTab.style.display = "none";
     problemTab.style.display = "block";
+    problem_aiTab.style.display = "none";
     terminalTab.style.display = "none";
+  }else if (tab === "problems_ai") {
+    outputTab.style.display = "none";
+    problemTab.style.display = "none";
+    terminalTab.style.display = "none";
+    problem_aiTab.style.display = "block";
   }else{
     outputTab.style.display = "none";
     problemTab.style.display = "none";
     terminalTab.style.display = "block";
+    problem_aiTab.style.display = "none";
   }
 
   buttons.forEach(btn => btn.classList.remove("active"));

@@ -7,5 +7,4 @@ int main(){
     printf("hello, %s", name);
     //from db
     return 0;
-    
 }

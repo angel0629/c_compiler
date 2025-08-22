@@ -80,7 +80,8 @@ def ai_detect():
         prompt = (
             "你是極度精簡且專業的 C 語言程式審核助手。"
             "會給你一串 C 語言程式碼，幫我分析此程式碼是否有問題。"
-            "請只回傳 JSON，符合 schema，禁止多餘解釋。"
+            "用繁體中文回答。"
+            "格式請用：1.問題種類：[種類] \n 2.問題行數範圍：[第?行到第?行] \n3.問題原因：[原因] \n4.建議修改方式：[用引導的，不要直接給要改什麼]  \n5.信心指數：[0~1之間的數字，代表你對此判斷的信心，並用 % 數表示]"
             f"\n[Language]\n{lang}"
             f"\n[LocalFindings]\n{summary or '(none)'}"
             "\n[Code]\n"
@@ -89,7 +90,7 @@ def ai_detect():
         # 用和 /gpt 一樣的呼叫方式
         resp = client.chat.completions.create(
             model="gpt-4o",
-            messages=[{"role": "assistant", "content": prompt},
+            messages=[{"role": "system", "content": prompt},
                       {"role": "user", "content": code}],
             max_tokens=300,
             temperature=0
@@ -97,18 +98,7 @@ def ai_detect():
         ai_json_text = resp.choices[0].message.content
         print("正確回傳："+ai_json_text)
 
-        # 嘗試解析 JSON
-        try:
-            ai_json = json.loads(ai_json_text)
-        except Exception:
-            ai_json = {
-                "kind": "static_issues",
-                "root_cause": "LLM回傳非標準JSON",
-                "suggested_fixes": [ai_json_text[:200]],
-                "confidence": 0.2
-            }
-
-        return jsonify({"ok": True, "ai": ai_json, "local": local_findings})
+        return jsonify({"ok": True, "ai": ai_json_text, "local": local_findings})
     except Exception as e:
         print("❌ ai-detect 錯誤：", str(e))
         return jsonify({"ok": False, "error": str(e)}), 500

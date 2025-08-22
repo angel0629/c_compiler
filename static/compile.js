@@ -113,7 +113,7 @@ function checkSyntax(code) {
     try {
       const response = await fetch('/api/check-syntax', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Accept-Language': 'zh-TW'},
         body: JSON.stringify({ code })
       });
       const result = await response.json();
@@ -341,9 +341,13 @@ window.addEventListener('DOMContentLoaded', () => {
           if (issues.length > 20) lines.push('（其餘略…）');
         } else {
           lines.push('【AI 偵測結果】🤖');
-          lines.push('(格式較特別，以下為原始回應前 800 字)');
-          try { lines.push(JSON.stringify(data.ai, null, 2).slice(0, 800)); }
-          catch { lines.push(String(data.ai).slice(0, 800)); }
+          //lines.push('(格式較特別，以下為原始回應前 1000 字)');
+          try { 
+            lines.push(data.ai); 
+            //lines.push(JSON.stringify(data.ai, null, 2).slice(0, 1000)); 
+          } catch (e) {
+            lines.push('無法解析 AI 回應：' + e.message);
+          }
         }
 
         setStatus('【狀態】已更新（{time}）');

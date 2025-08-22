@@ -187,7 +187,7 @@ button:hover {
   font-weight: 600;
   color: #4a90e2;
 }
-#output {
+#output, #problems, #problems_ai {
   width: 100%;
   max-height: 100%;
   color: #333;
@@ -284,7 +284,7 @@ button:hover {
 #output, #problems,#terminal,#problems_ai {
   margin-top: 50px;
   white-space: pre-wrap;
-  font-size: 16px
+  font-size: 16px;
 }
 
 
@@ -321,4 +321,5 @@ button:hover {
 .ai-switch input:checked + .ai-slider:before{
   transform: translate(calc(var(--w) - var(--knob) - var(--pad)*2), -50%);
 }
+
 

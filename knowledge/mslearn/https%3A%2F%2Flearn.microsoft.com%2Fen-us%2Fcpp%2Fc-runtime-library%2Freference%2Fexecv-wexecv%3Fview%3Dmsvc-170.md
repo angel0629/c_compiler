@@ -1,0 +1,111 @@
+---
+title: "_execv, _wexecv"
+source: "https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/execv-wexecv?view=msvc-170"
+source_tag: "mslearn"
+license: "CC BY 4.0"
+license_url: "https://creativecommons.org/licenses/by/4.0/"
+attribution: "© Microsoft Learn (CC BY 4.0)"
+---
+Loads and executes new child processes.
+
+## Syntax
+
+```
+intptr_t _execv(
+   const char *cmdname,
+   const char *const *argv
+);
+intptr_t _wexecv(
+   const wchar_t *cmdname,
+   const wchar_t *const *argv
+);
+```
+
+### Parameters
+
+_`cmdname`_  
+Path of the file to execute.
+
+_`argv`_  
+Array of pointers to parameters.
+
+## Return value
+
+If successful, these functions don't return to the calling process. A return value of -1 indicates an error, in which case the `errno` global variable is set.
+
+`errno` value
+
+Description
+
+`E2BIG`
+
+The space required for the arguments and environment settings exceeds 32 KB.
+
+`EACCES`
+
+The specified file has a locking or sharing violation.
+
+`EINVAL`
+
+Invalid parameter.
+
+`EMFILE`
+
+Too many files open (the specified file must be opened to determine whether it's executable).
+
+`ENOENT`
+
+The file or path not found.
+
+`ENOEXEC`
+
+The specified file isn't executable or has an invalid executable-file format.
+
+`ENOMEM`
+
+Not enough memory is available to execute the new process; the available memory has been corrupted; or an invalid block exists, indicating that the calling process wasn't allocated properly.
+
+For more information about these and other return codes, see [`errno`, `_doserrno`, `_sys_errlist`, and `_sys_nerr`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/errno-doserrno-sys-errlist-and-sys-nerr?view=msvc-170).
+
+Each of these functions loads and executes a new process, passing an array of pointers to command-line arguments.
+
+The **`_execv`** functions validate their parameters. If _`cmdname`_ is a null pointer, or if _`argv`_ is a null pointer, pointer to an empty array, or if the array contains an empty string as the first argument, the **`_execv`** functions invoke the invalid parameter handler as described in [Parameter validation](https://learn.microsoft.com/en-us/cpp/c-runtime-library/parameter-validation?view=msvc-170). If execution is allowed to continue, these functions set `errno` to `EINVAL` and return -1. No process is launched.
+
+By default, this function's global state is scoped to the application. To change this behavior, see [Global state in the CRT](https://learn.microsoft.com/en-us/cpp/c-runtime-library/global-state?view=msvc-170).
+
+## Requirements
+
+Function
+
+Required header
+
+Optional header
+
+**`_execv`**
+
+<process.h>
+
+<errno.h>
+
+**`_wexecv`**
+
+<process.h> or <wchar.h>
+
+<errno.h>
+
+For more compatibility information, see [Compatibility](https://learn.microsoft.com/en-us/cpp/c-runtime-library/compatibility?view=msvc-170).
+
+## Example
+
+See the example in [`_exec`, `_wexec` functions](https://learn.microsoft.com/en-us/cpp/c-runtime-library/exec-wexec-functions?view=msvc-170).
+
+## See also
+
+[Process and environment control](https://learn.microsoft.com/en-us/cpp/c-runtime-library/process-and-environment-control?view=msvc-170)  
+[`_exec`, `_wexec` functions](https://learn.microsoft.com/en-us/cpp/c-runtime-library/exec-wexec-functions?view=msvc-170)  
+[`abort`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/abort?view=msvc-170)  
+[`atexit`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/atexit?view=msvc-170)  
+[`exit`, `_Exit`, `_exit`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/exit-exit-exit?view=msvc-170)  
+[`_onexit`, `_onexit_m`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/onexit-onexit-m?view=msvc-170)  
+[`_spawn`, `_wspawn` functions](https://learn.microsoft.com/en-us/cpp/c-runtime-library/spawn-wspawn-functions?view=msvc-170)  
+[`system`, `_wsystem`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/system-wsystem?view=msvc-170)

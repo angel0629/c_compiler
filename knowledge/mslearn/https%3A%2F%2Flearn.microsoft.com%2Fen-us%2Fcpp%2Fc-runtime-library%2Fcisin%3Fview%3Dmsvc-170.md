@@ -1,0 +1,32 @@
+---
+title: "_CIsin"
+source: "https://learn.microsoft.com/en-us/cpp/c-runtime-library/cisin?view=msvc-170"
+source_tag: "mslearn"
+license: "CC BY 4.0"
+license_url: "https://creativecommons.org/licenses/by/4.0/"
+attribution: "© Microsoft Learn (CC BY 4.0)"
+---
+Calculates the sine of the top value in the floating-point stack.
+
+## Syntax
+
+```
+void __cdecl _CIsin();
+```
+
+## Remarks
+
+This intrinsic version of the [`sin`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/sin-sinf-sinl?view=msvc-170) function has a specialized calling convention that the compiler understands. It speeds up the execution because it prevents copies from being generated and helps with register allocation.
+
+The resulting value is pushed onto the top of the floating-point stack.
+
+By default, this function's global state is scoped to the application. To change this behavior, see [Global state in the CRT](https://learn.microsoft.com/en-us/cpp/c-runtime-library/global-state?view=msvc-170).
+
+## Requirements
+
+**Platform:** x86
+
+## See also
+
+[Alphabetical function reference](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crt-alphabetical-function-reference?view=msvc-170)  
+[`sin`, `sinf`, `sinl`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/sin-sinf-sinl?view=msvc-170)

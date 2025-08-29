@@ -1,0 +1,81 @@
+---
+title: "Security Features in the CRT"
+source: "https://learn.microsoft.com/en-us/cpp/c-runtime-library/security-features-in-the-crt?view=msvc-170"
+source_tag: "mslearn"
+license: "CC BY 4.0"
+license_url: "https://creativecommons.org/licenses/by/4.0/"
+attribution: "© Microsoft Learn (CC BY 4.0)"
+---
+Many old CRT functions have newer, more secure versions. If a secure function exists, the older, less secure version is marked as deprecated. The new version has the `_s` ("secure") suffix.
+
+In this context, "deprecated" means that use of the function isn't recommended. It doesn't mean the function will be removed from the CRT.
+
+The secure functions don't prevent or correct security errors. Instead, they catch errors when they occur. They do extra checks for error conditions. If there's an error, they invoke an error handler (see [Parameter validation](https://learn.microsoft.com/en-us/cpp/c-runtime-library/parameter-validation?view=msvc-170)).
+
+For example, the `strcpy` function can't tell if the string it copies is too large for the destination buffer. Its secure counterpart, `strcpy_s`, takes the size of the buffer as a parameter. So, it can determine if a buffer overrun will occur. If you use `strcpy_s` to copy 11 characters into a 10 character buffer, that's an error on your part; `strcpy_s` can't correct your mistake. But it can detect your error and inform you by invoking the invalid parameter handler.
+
+## Eliminating deprecation warnings
+
+There are several ways to eliminate deprecation warnings for the older, less secure functions. The simplest is simply to define `_CRT_SECURE_NO_WARNINGS` or use the [`warning`](https://learn.microsoft.com/en-us/cpp/preprocessor/warning?view=msvc-170) pragma. Either disables deprecation warnings, but the security issues that caused the warnings still exist. It's better to leave deprecation warnings enabled and take advantage of the new CRT security features.
+
+In C++, the easiest way to eliminate the deprecation warnings is to use [Secure template overloads](https://learn.microsoft.com/en-us/cpp/c-runtime-library/secure-template-overloads?view=msvc-170). The overloads eliminate deprecation warnings in many cases. They replace calls to deprecated functions with calls to secure versions of the functions. For example, consider this deprecated call to `strcpy`:
+
+```
+char szBuf[10];
+strcpy(szBuf, "test"); // warning: deprecated
+```
+
+Defining `_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES` as 1 eliminates the warning by changing the `strcpy` call to `strcpy_s`, which prevents buffer overruns. For more information, see [Secure template overloads](https://learn.microsoft.com/en-us/cpp/c-runtime-library/secure-template-overloads?view=msvc-170).
+
+For those deprecated functions without secure template overloads, you should definitely consider manually updating your code to use the secure versions.
+
+Another source of deprecation warnings, unrelated to security, is the POSIX functions. Replace POSIX function names with their standard equivalents (for example, change [`access`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-crt?view=msvc-170) to [`_access`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/access-waccess?view=msvc-170)), or disable POSIX-related deprecation warnings by defining `_CRT_NONSTDC_NO_WARNINGS`. For more information, see [Compatibility](https://learn.microsoft.com/en-us/cpp/c-runtime-library/compatibility?view=msvc-170).
+
+## More security features
+
+Some of the security features include:
+
+*   **Parameter Validation**
+    
+    Secure functions, and many of their unsecure counterparts, validate parameters. Validation may include:
+    
+    *   Checking for `NULL` values.
+    *   Checking enumerated values for validity.
+    *   Checking that integral values are in valid ranges.
+    
+    For more information, see [Parameter validation](https://learn.microsoft.com/en-us/cpp/c-runtime-library/parameter-validation?view=msvc-170).
+    
+    A handler for invalid parameters is also accessible to the developer. When a function encounters an invalid parameter, instead of asserting and exiting the application, the CRT allows you to check these problems via [`_set_invalid_parameter_handler` or `_set_thread_local_invalid_parameter_handler`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/set-invalid-parameter-handler-set-thread-local-invalid-parameter-handler?view=msvc-170).
+    
+*   **Sized Buffers**
+    
+    You must pass the buffer size to any secure function that writes to a buffer. The secure versions validate that the buffer is large enough before writing to it. The validation helps avoid dangerous buffer overrun errors that could allow malicious code to execute. These functions usually return an `errno` error code and invoke the invalid parameter handler if the size of the buffer is too small. Functions that read from input buffers, such as `gets`, have secure versions that require you to specify a maximum size.
+    
+    The debug versions of _some_ security-enhanced CRT functions fill the buffer passed to them with a special character (0xFE). This fill character helps to find cases where the incorrect size was passed to the function. Unfortunately, it also reduces performance. To improve performance, use **`_CrtSetDebugFillThreshold`** to disable buffer-filling. For more information, and a list of functions that have this behavior, see [`_CrtSetDebugFillThreshold`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtsetdebugfillthreshold?view=msvc-170).
+    
+*   **Null termination**
+    
+    Some functions that left potentially nonterminated strings have secure versions, which ensure that strings are properly null-terminated.
+    
+*   **Enhanced error reporting**
+    
+    The secure functions return error codes with more error information than was available with the preexisting functions. The secure functions and many of the preexisting functions now set `errno` and often return an `errno` code type as well, to provide better error reporting.
+    
+*   **Filesystem security**
+    
+    Secure file I/O APIs support secure file access in the default case.
+    
+*   **Windows security**
+    
+    Secure process APIs enforce security policies and allow ACLs to be specified.
+    
+*   **Format string syntax checking**
+    
+    Invalid strings are detected, for example, when you use incorrect type field characters in `printf` format strings.
+    
+
+## See also
+
+[Parameter validation](https://learn.microsoft.com/en-us/cpp/c-runtime-library/parameter-validation?view=msvc-170)  
+[Secure template overloads](https://learn.microsoft.com/en-us/cpp/c-runtime-library/secure-template-overloads?view=msvc-170)  
+[C runtime (CRT) and C++ Standard Library (STL) `.lib` files](https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-170)

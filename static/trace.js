@@ -10,6 +10,3 @@ editor.setOptions({
   animatedScroll: true
 });
 
-// if (window.serverCode) {
-//   editor.setValue(window.serverCode, -1); // -1 表示游標跳到第一行
-// }

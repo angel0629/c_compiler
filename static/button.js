@@ -64,8 +64,13 @@ async function traceCode() {
     body: JSON.stringify({ code })
   });
 
-  if (res.redirected) {
-    window.location.href = res.url;
+  if (res.ok) {
+    const html = await res.text();
+    document.open();
+    document.write(html);
+    document.close();
+  } else {
+    alert('分析失敗：' + res.status);
   }
 }
 

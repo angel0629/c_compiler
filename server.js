@@ -4,6 +4,7 @@ const db = require('./db'); // db.js 的檔案
 const fs = require("fs");
 const path = require("path");
 const { PythonShell } = require('python-shell');
+const { buildMemoryModel, buildTimeline } = require('./build_mem'); 
 
 //compiler 測試
 const { WebSocketServer } = require('ws');
@@ -144,8 +145,9 @@ app.get("/user_info", (req, res)=> {
 // 程式追蹤
 app.post('/receive_code', (req, res) => {
   const code = req.body.code ?? '';
-  let soruce_code = code;
-  console.log(soruce_code);
+  // let soruce_code = code;
+  let lastMessage = null;
+  // console.log(soruce_code);
 
   const workDir = __dirname; // 確保與 analyzer.py、code.txt 同目錄
   const filePath = path.join(workDir, 'code.txt');
@@ -170,13 +172,13 @@ app.post('/receive_code', (req, res) => {
     console.error('[PY STDERR]', m);
   });
 
-  pyshell.end((err, code, signal) => {
+  pyshell.end((err, exitCode, signal) => {
     if (err) {
       console.error('🐍 Python 錯誤：', err);
       return res.status(500).json({ error: 'Python 分析失敗', detail: String(err) });
     }
 
-    console.log('Python exit code:', code, 'signal:', signal);
+    console.log('Python exit code:', exitCode, 'signal:', signal);
 
     if (!lastMessage) {
       return res.status(500).send('⚠️ Python 沒有回傳 JSON');
@@ -185,10 +187,14 @@ app.post('/receive_code', (req, res) => {
     try {
       const analysis = JSON.parse(lastMessage);
       // ✅ 把程式碼與分析資料丟給 ejs
-      res.redirect(
-        '/code_trace?code=' + encodeURIComponent(soruce_code) +
-        '&analysis=' + encodeURIComponent(JSON.stringify(analysis))
-      );
+      // res.redirect(
+      //   '/code_trace?code=' + encodeURIComponent(soruce_code) +
+      //   '&analysis=' + encodeURIComponent(JSON.stringify(analysis))
+      // );
+      const memoryModel = buildMemoryModel(analysis, { code, model: 'LP64' });
+      const timeline = buildTimeline(analysis, { code, model:'LP64' });
+      // 建議直接 render，避免 URL 過長
+      res.render('code_trace', { code, analysis, memoryModel,timeline });
     } catch (e) {
       console.error('🧩 JSON 解析錯誤：', e, '原始訊息=', lastMessage);
       return res.status(500).send('Python 傳回資料格式錯誤');
@@ -196,17 +202,17 @@ app.post('/receive_code', (req, res) => {
   });
 });
 
-app.get('/code_trace', (req, res) => {
-  try {
-    const code = req.query.code || '';
-    console.log(code,'32979873249732974')
-    const analysis = JSON.parse(req.query.analysis || '[]');
-    res.render('code_trace', { code, analysis });
-  } catch (err) {
-    console.error('解析錯誤：', err);
-    res.status(400).send('無法解析分析資料');
-  }
-});
+// app.get('/code_trace', (req, res) => {
+//   try {
+//     const code = req.query.code || '';
+//     console.log(code,'32979873249732974')
+//     const analysis = JSON.parse(req.query.analysis || '[]');
+//     res.render('code_trace', { code, analysis });
+//   } catch (err) {
+//     console.error('解析錯誤：', err);
+//     res.status(400).send('無法解析分析資料');
+//   }
+// });
 
 
 // 登入功能

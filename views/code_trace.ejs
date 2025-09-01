@@ -7,87 +7,210 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="chatbot_style.css">
-
+  <link rel="stylesheet" href="code_trace.css" />
 </head>
+
 <body>
   <div class="header">
     <h1>C 語言線上編譯器</h1>
   </div>
-  <div class="button-row">
-    <button class="execute-button" onclick="previous()">上一步</button>
-    <button class="submit-button" onclick="next()">下一步</button>
-  </div>
-
-  <div class="main-container">
-    <div id="question-box">
-      <h2 class="section-title">記憶體配置模擬圖</h2>
-    
-      <div class="section-block">
-        <h2>分析結果</h2>
-        <ul>
-          <% analysis.forEach(item => { %>
-            <li>
-              第 <%= item.line_no %> 行：
-              <%= item.meaning %>，
-              類型：<%= item.type %>
-              <% if (item.varible_name) { %>
-                ，變數：<%= item.varible_name %>
-              <% } %>
-              <% if (item.value !== null) { %>
-                ，值：<%= item.value %>
-              <% } %>
-              <% if (item.size !== null) { %>
-                ，大小：<%= item.size %>
-              <% } %>
-            </li>
-          <% }) %>
-        </ul>
-      </div>
-    
-      <div class="section-block">
-        <h4>輸出說明</h4>
-        <p id="output_info" class="text-block"></p>
-      </div>
-    
-      
+  <div class="container">
+  <!-- 左：Stack / Heap。初始先畫第 0 步（尚未執行） -->
+  <div class="left-col">
+    <div class="panel">
+      <h3>Stack</h3>
+      <div id="stackMount"></div>
     </div>
-
-    
-    
-    <div class="right-side">
-      <div id="editor-container">
-        <div id="editor"><textarea id="codeInput" ><%= code %></textarea></div>
-        <!-- <div id="editor"><%= code %></div> -->
-      </div>
-
-      <div id="output-container">
-        <h3>輸出結果：</h3>
-        <div id="output"><pre id="judge_output"></pre></div>
-      </div>
+    <div class="panel">
+      <h3>Heap</h3>
+      <div id="heapMount"></div>
     </div>
   </div>
 
-  <!-- Chat button -->
-  <div class="chat-button" onclick="toggleChatBox()">💬</div>
-
-  <!-- Chat box -->
-  <div class="chat-box" id="chat-box">
-    <div class="chat-header">
-      AI 聊天室 <span class="close-chat" onclick="closeChatBox()">✖</span>
+  <!-- 右：原本的 code + 箭頭 + Prev/Next -->
+  <div class="code-panel">
+    <div style="font-weight:700; margin-bottom:8px;">原本的 code</div>
+    <div class="code-grid code-scroll">
+      <div class="arrow-col" id="arrowCol"></div>
+      <ol class="code-lines" id="codeLines"></ol>
     </div>
-    <div class="chat-messages" id="chatMessages">
-      <div class="bot-message">你好，有什麼可以幫助的嗎？</div>
+    <div class="nav">
+      <button id="prevBtn">Prev</button>
+      <button id="nextBtn">Next</button>
+      <div class="muted" id="stepInfo" style="margin-top:6px;"></div>
     </div>
-    <div class="chat-input">
-      <input type="text" id="userInput" placeholder="請輸入問題...">
-      <button onclick="sendMessage()">送出</button>
-    </div>
+    <div class="panel" style="margin-top:12px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+    <b>Timeline</b>
+    <span class="small">點擊任何一步即可跳轉 · 支援 ←/→</span>
   </div>
 
+  <!-- Scrubber -->
+  <div class="scrubber">
+    <span class="small" id="scrubFrom">0</span>
+    <input id="scrubber" type="range" min="0" max="0" value="0" step="1">
+    <span class="small" id="scrubTo">0</span>
+  </div>
 
-<!-- <script>
-  window.serverCode = `<%- code %>`;
-</script> -->
-<script src="/trace.js"></script>
+  <!-- 列表 -->
+  <div id="timelineList" class="timeline" style="margin-top:8px;"></div>
+</div>
+
+  </div>
+</div>
+<script>
+  // 從後端帶來的資料
+  const CODE = `<%- code.replace(/`/g,'\\`') %>`;
+  const TIMELINE = <%- JSON.stringify(timeline) %>;
+
+  // 將程式碼切行
+  const LINES = CODE.split('\n');
+
+  // 狀態
+  let currentStep = 0; // 0 = 尚未執行
+  const arrowCol = document.getElementById('arrowCol');
+  const codeLines = document.getElementById('codeLines');
+  const stackMount = document.getElementById('stackMount');
+  const heapMount  = document.getElementById('heapMount');
+  const stepInfo   = document.getElementById('stepInfo');
+  // 元素
+  const timelineList = document.getElementById('timelineList');
+  const scrubber     = document.getElementById('scrubber');
+  const scrubFrom    = document.getElementById('scrubFrom');
+  const scrubTo      = document.getElementById('scrubTo');
+  
+  function renderTimeline() {
+  // 滑桿區間
+  scrubFrom.textContent = 0;
+  scrubTo.textContent   = TIMELINE.length - 1;
+  scrubber.max          = TIMELINE.length - 1;
+  scrubber.value        = currentStep;
+
+  // 列表
+  timelineList.innerHTML = '';
+  TIMELINE.forEach((s, i) => {
+    const item = document.createElement('div');
+    item.className = 'timeline-item' + (i === currentStep ? ' active' : '');
+    item.dataset.step = i;
+
+    item.innerHTML = `
+      <div class="timeline-step">#${s.step}</div>
+      <div class="timeline-desc">第 ${s.line} 行 · ${s.desc || '執行'}</div>
+    `;
+
+    item.onclick = () => gotoStep(i);
+    timelineList.appendChild(item);
+  });
+}
+
+// 更新「哪一項是 active」
+function highlightTimeline() {
+  [...timelineList.children].forEach((el, idx) => {
+    el.classList.toggle('active', idx === currentStep);
+  });
+  scrubber.value = currentStep;
+}
+
+// 把時間軸與既有渲染整合
+const _oldGoto = gotoStep;
+gotoStep = function(n) {
+  currentStep = Math.max(0, Math.min(TIMELINE.length - 1, n));
+  renderArrow();
+  renderMemory();
+  highlightTimeline();
+  stepInfo && (stepInfo.textContent = `Step ${TIMELINE[currentStep].step} / ${TIMELINE.length-1} ．第 ${TIMELINE[currentStep].line} 行 ．${TIMELINE[currentStep].desc}`);
+};
+
+// Scrubber 事件
+scrubber.addEventListener('input', e => gotoStep(Number(e.target.value)));
+
+// 鍵盤快捷鍵
+window.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  gotoStep(currentStep - 1);
+  if (e.key === 'ArrowRight') gotoStep(currentStep + 1);
+});
+
+// 初始化：在 renderCode 後、第一次 gotoStep 之前呼叫
+renderTimeline();
+
+  // 初始把程式碼行列出來
+  function renderCode() {
+    codeLines.innerHTML = '';
+    LINES.forEach((ln, i) => {
+      const li = document.createElement('li');
+      li.textContent = ln || ' ';
+      codeLines.appendChild(li);
+    });
+  }
+
+  // 畫箭頭與高亮
+  function renderArrow() {
+    const step = TIMELINE[currentStep];
+    const lineIdx = Math.max(0, (step.line||1) - 1); // 轉成 0-based
+    // 箭頭欄：每一行一個占位
+    arrowCol.innerHTML = '';
+    for (let i=0;i<LINES.length;i++){
+      const div = document.createElement('div');
+      div.className = 'arrow';
+      div.textContent = (i === lineIdx && currentStep !== 0) ? '➜' : ' ';
+      arrowCol.appendChild(div);
+    }
+    // 高亮當前行
+    [...codeLines.children].forEach((li, idx) => {
+      li.classList.toggle('active-line', idx === lineIdx && currentStep !== 0);
+    });
+    stepInfo.textContent = `Step ${step.step} / ${TIMELINE.length-1} ．第 ${step.line} 行 ．${step.desc}`;
+  }
+
+  // 用當前 step 的 model 重畫 Stack/Heap
+  function renderMemory() {
+    const model = TIMELINE[currentStep].model;
+    // Stack
+    stackMount.innerHTML = '';
+    (model.stack || []).forEach(f => {
+      const box = document.createElement('div');
+      box.className = 'stack-frame';
+      box.innerHTML = `<div><span class="badge">frame</span> <b>${f.name}</b> <span class="muted">(${f.frameSize} B)</span></div>`;
+      (f.vars||[]).forEach(v => {
+        const row = document.createElement('div');
+        row.className = 'var';
+        row.innerHTML = `
+          <div><b>${v.name}</b> <span class="badge">${v.ctype}${v.kind==='pointer'?'*':''}</span></div>
+          <div>${
+            v.kind==='array'
+              ? `<div class="array">${Array.from({length:v.length||0}).map(()=>'<div class="cell">?</div>').join('')}</div><div class="muted">${v.length}×${v.elemSize}B=${v.size}B</div>`
+              : `${(v.initialized && v.value!=null)? v.value : '?'} <span class="muted">(${v.size}B)</span>`
+          }</div>`;
+        box.appendChild(row);
+      });
+      stackMount.appendChild(box);
+    });
+    // Heap
+    heapMount.innerHTML = '';
+    if (!model.heap || model.heap.length===0){
+      heapMount.innerHTML = '<div class="muted">（此步沒有動態配置）</div>';
+    } else {
+      model.heap.forEach(h => {
+        const box = document.createElement('div');
+        box.className = 'stack-frame';
+        box.innerHTML = `<div><span class="badge">heap</span> block <b>${h.id}</b> — ${h.size} B ${h.freed?'(freed)':''}</div>`;
+        heapMount.appendChild(box);
+      });
+    }
+  }
+
+  function gotoStep(n){
+    currentStep = Math.max(0, Math.min(TIMELINE.length-1, n));
+    renderArrow();
+    renderMemory();
+  }
+
+  document.getElementById('prevBtn').onclick = () => gotoStep(currentStep - 1);
+  document.getElementById('nextBtn').onclick = () => gotoStep(currentStep + 1);
+
+  // 初始
+  renderCode();
+  gotoStep(0); // 先停在 Step 0（還沒執行）
+</script>
 </body>
 </html>

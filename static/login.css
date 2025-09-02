@@ -2,7 +2,7 @@
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(to right, #56ccf2, #2f80ed);
+    background: linear-gradient(to right, #ace3ff, #77ace5);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -47,7 +47,7 @@ body {
   }
   
   .login-form h2 {
-    color: #2f80ed;
+    color: #5295ed;
     margin-bottom: 30px;
     text-align: center;
   }
@@ -68,7 +68,7 @@ body {
   button {
     width: 100%;
     padding: 12px;
-    background: linear-gradient(to right, #56ccf2, #2f80ed);
+    background: linear-gradient(to right, #89cef9, #6694d1);
     border: none;
     border-radius: 8px;
     color: #fff;
@@ -78,6 +78,6 @@ body {
   }
   
   button:hover {
-    background: linear-gradient(to right, #2f80ed, #56ccf2);
+    background: linear-gradient(to right, #a4d4f3, #92b4df);
   }
   

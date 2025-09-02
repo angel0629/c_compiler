@@ -20,34 +20,69 @@
 
     .header {
       text-align: center;
+      font-size: 14px;
       padding: 0px;
       position: relative;
-      background-color: #4a90e2;
+      background-color: #70a2dc;
       color: white;
-      border-bottom: 2px solid #7db8f1;
+      border-bottom: none; 
     }
 
-    .headerBTN{
+    .navbar {
+      background-color: hsl(0, 4%, 91%);
+      padding: 2px 20px;  /* reduced top/bottom padding */
       display: flex;
-      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-bottom: none;
+      height: 40px;       /* optional fixed height */
     }
 
-    .button-row {
-      background-color: #e9ecef;
-      padding: 5px 20px;
+    .navbar-left, .navbar-right {
       display: flex;
-      justify-content: flex-end;
+      align-items: center;
       gap: 10px;
+    }
+    
+    .navbar-left .nav-btn {
+      background-color: #f9fafb; /* very light gray */
+      color: #374151;           /* slate gray */
+      font-weight: 500;
+      border: 1px solid #e5e7eb;
+      padding: 6px 14px;
+      border-radius: 9999px; /* pill */
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.1s ease;
+    }
+  
+    .navbar-left .nav-btn:hover {
+      background-color: #f3f4f6;
+      color: none; /* accent blue */
+      border-color: #d1d5db;
+    }
+
+    .navbar-left .nav-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
     }
 
     .signin-button {
-      border-radius: 10px;
-      padding: 0px 10px;
-      font-size: 15px;
+      background-color: #f9fafb;
+      color: #374151;
+      font-weight: 500;
+      border: 1px solid #e5e7eb;
+      padding: 6px 14px;
+      border-radius: 9999px; /* pill */
+      font-size: 14px;
       cursor: pointer;
-      border: none;
-      transition: all 0.3s ease;
-      background-color: #ffffff;
+      transition: all 0.25s ease;
+    }
+
+    .signin-button:hover {
+      background-color: #f3f4f6; /* slightly darker */
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
     .question-section {
@@ -99,21 +134,19 @@
 </head>
 
 <body>
-
   <div class="header">
     <h1>C語言線上AI互動學習平台</h1>
-    <div class="headerBTN">
-      <button onclick="home_page()">home</button>
-      <button class="usr-info" onclick="check_usr_info()">user_info</button>
-    </div>
-  </div>
-
-  <div class="button-row">
-    
-    <button class="signin-button">登入</button>
-  </div>
-
   
+    <div class="navbar">
+      <div class="navbar-left">
+        <button class="nav-btn" onclick="home_page()">Home</button>
+        <button class="nav-btn" onclick="check_usr_info()">User Info</button>
+      </div>
+      <div class="navbar-right">
+        <button class="signin-button">登入</button>
+      </div>
+    </div>
+</div>
 
   <div class="question-section">
     <h2>請選擇一個題目：</h2>

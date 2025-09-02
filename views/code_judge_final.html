@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>C 語言線上 AI 互動學習平台</title>
+  <title>C語言線上AI互動學習平台</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
@@ -17,28 +17,29 @@
   <link rel="stylesheet" href="compile.css">
 
 </head>
-<body>
+<body> 
   <div class="header">
-    <h1>C 語言線上 AI 互動學習平台</h1>
-    <div class="headerBTN">
-      <button onclick="home_page()">home</button>
-      <button class="usr-info" onclick="check_usr_info()">user_info</button>
+    <h1>C語言線上AI互動學習平台</h1>
+    <div class="navbar">
+      <div class="navbar-left">
+        <button class="nav-btn" onclick="home_page()">Home</button>
+        <button class="nav-btn" onclick="check_usr_info()">User Info</button>
+      </div>
+      <div class="navbar-right">
+        <!-- AI 自動偵測開關 -->
+        <div id="ai_toggle_wrap" style="margin:8px 0;">
+          <label class="ai-switch">
+            <input type="checkbox" id="aiToggle">
+            <span class="ai-slider"></span>
+          </label>
+          <span style="margin-left:8px; color: black;">AI 即時偵測</span>
+        </div>
+        <button class="trace-button" onclick="traceCode()">程式追蹤</button>
+        <button class="save-button" onclick="saveCode()">儲存程式</button>
+        <button class="execute-button" id="runBtn" onclick="showTab('terminal')">執行程式</button>
+        <button class="submit-button" onclick="showTab('output'); submitAnswer();">送出解答</button>
+      </div>
     </div>
-  </div>
-  <div class="button-row">
-    <!-- AI 自動偵測開關 -->
-    <div id="ai_toggle_wrap" style="margin:8px 0;">
-      <label class="ai-switch">
-        <input type="checkbox" id="aiToggle">
-        <span class="ai-slider"></span>
-      </label>
-      <span style="margin-left:8px;">AI 即時偵測</span>
-    </div>
-
-    <button class="trace-button" onclick="traceCode()">程式追蹤</button>
-    <button class="save-button" onclick="saveCode()">儲存程式</button>
-    <button class="execute-button" id="runBtn" onclick="showTab('terminal')">執行程式</button>
-    <button class="submit-button" onclick="showTab('output'); submitAnswer();">送出解答</button>
   </div>
   <div class="main-container">
     <div id="question-box">

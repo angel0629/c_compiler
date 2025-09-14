@@ -1,0 +1,87 @@
+---
+title: "_clear87, _clearfp"
+source: "https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/clear87-clearfp?view=msvc-170"
+source_tag: "mslearn"
+license: "CC BY 4.0"
+license_url: "https://creativecommons.org/licenses/by/4.0/"
+attribution: "© Microsoft Learn (CC BY 4.0)"
+---
+Gets and clears the floating-point status word.
+
+## Syntax
+
+```
+unsigned int _clear87( void );
+unsigned int _clearfp( void );
+```
+
+## Return value
+
+The bits in the value returned indicate the floating-point status before the call to **`_clear87`** or **`_clearfp`**. For a complete definition of the bits returned by **`_clear87`**, see Float.h. Many of the math library functions modify the 8087/80287 status word, with unpredictable results. Return values from **`_clear87`** and `_status87` become more reliable as fewer floating-point operations are performed between known states of the floating-point status word.
+
+The **`_clear87`** function clears the exception flags in the floating-point status word, sets the busy bit to 0, and returns the status word. The floating-point status word is a combination of the 8087/80287 status word and other conditions detected by the 8087/80287 exception handler, such as floating-point stack overflow and underflow.
+
+**`_clearfp`** is a platform-independent, portable version of the **`_clear87`** routine. It's identical to **`_clear87`** on Intel (x86) platforms and is also supported by the x64 and ARM platforms. To ensure that your floating-point code is portable to x64 and ARM, use **`_clearfp`**. If you're only targeting x86 platforms, you can use either **`_clear87`** or **`_clearfp`**.
+
+These functions are deprecated when compiling with [/clr (Common Language Runtime Compilation)](https://learn.microsoft.com/en-us/cpp/build/reference/clr-common-language-runtime-compilation?view=msvc-170) because the common language runtime only supports the default floating-point precision.
+
+## Requirements
+
+Routine
+
+Required header
+
+**`_clear87`**
+
+<float.h>
+
+**`_clearfp`**
+
+<float.h>
+
+For more compatibility information, see [Compatibility](https://learn.microsoft.com/en-us/cpp/c-runtime-library/compatibility?view=msvc-170).
+
+## Example
+
+```
+// crt_clear87.c
+// compile with: /Od
+
+// This program creates various floating-point
+// problems, then uses _clear87 to report on these problems.
+// Compile this program with Optimizations disabled (/Od).
+// Otherwise the optimizer will remove the code associated with
+// the unused floating-point values.
+//
+
+#include <stdio.h>
+#include <float.h>
+
+int main( void )
+{
+   double a = 1e-40, b;
+   float x, y;
+
+   printf( "Status: %.4x - clear\n", _clear87()  );
+
+   // Store into y is inexact and underflows:
+   y = a;
+   printf( "Status: %.4x - inexact, underflow\n", _clear87() );
+
+   // y is denormal:
+   b = y;
+   printf( "Status: %.4x - denormal\n", _clear87() );
+}
+```
+
+```
+Status: 0000 - clear
+Status: 0003 - inexact, underflow
+Status: 80000 - denormal
+```
+
+## See also
+
+[Math and floating-point support](https://learn.microsoft.com/en-us/cpp/c-runtime-library/floating-point-support?view=msvc-170)  
+[`_control87`, `_controlfp`, `__control87_2`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/control87-controlfp-control87-2?view=msvc-170)  
+[`_status87`, `_statusfp`, `_statusfp2`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/status87-statusfp-statusfp2?view=msvc-170)

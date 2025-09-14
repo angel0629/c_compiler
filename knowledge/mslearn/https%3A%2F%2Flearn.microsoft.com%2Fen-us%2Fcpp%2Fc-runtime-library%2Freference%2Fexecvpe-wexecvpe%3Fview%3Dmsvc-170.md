@@ -1,0 +1,118 @@
+---
+title: "_execvpe, _wexecvpe"
+source: "https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/execvpe-wexecvpe?view=msvc-170"
+source_tag: "mslearn"
+license: "CC BY 4.0"
+license_url: "https://creativecommons.org/licenses/by/4.0/"
+attribution: "© Microsoft Learn (CC BY 4.0)"
+---
+Loads and runs new child processes.
+
+## Syntax
+
+```
+intptr_t _execvpe(
+   const char *cmdname,
+   const char *const *argv,
+   const char *const *envp
+);
+intptr_t _wexecvpe(
+   const wchar_t *cmdname,
+   const wchar_t *const *argv,
+   const wchar_t *const *envp
+);
+```
+
+### Parameters
+
+_`cmdname`_  
+Path of the file to execute.
+
+_`argv`_  
+Array of pointers to parameters.
+
+_`envp`_  
+Array of pointers to environment settings.
+
+## Return value
+
+If successful, these functions don't return to the calling process. A return value of -1 indicates an error, in which case the `errno` global variable is set.
+
+`errno` value
+
+Description
+
+`E2BIG`
+
+The space that's required for the arguments and environment settings exceeds 32 KB.
+
+`EACCES`
+
+The specified file has a locking or sharing violation.
+
+`EMFILE`
+
+Too many files are open. (The specified file must be opened to determine whether it's executable.)
+
+`ENOENT`
+
+The file or path isn't found.
+
+`ENOEXEC`
+
+The specified file isn't executable or has an invalid executable-file format.
+
+`ENOMEM`
+
+Not enough memory is available to execute the new process; the available memory has been corrupted; or an invalid block exists, which indicates that the calling process wasn't allocated correctly.
+
+For more information about these and other return codes, see [`errno`, `_doserrno`, `_sys_errlist`, and `_sys_nerr`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/errno-doserrno-sys-errlist-and-sys-nerr?view=msvc-170).
+
+Each of these functions loads and executes a new process, and passes an array of pointers to command-line arguments and an array of pointers to environment settings. These functions use the `PATH` environment variable to find the file to execute.
+
+The **`_execvpe`** functions validate their parameters. These functions invoke the invalid parameter handler, as described in [Parameter validation](https://learn.microsoft.com/en-us/cpp/c-runtime-library/parameter-validation?view=msvc-170), when:
+
+*   _`cmdname`_ is a null pointer,
+*   _`argv`_ is either a null pointer or pointer to an empty array,
+*   the array contains an empty string as the first argument.
+
+If execution is allowed to continue by the handler, these functions set `errno` to `EINVAL`, and return -1. No process is launched.
+
+By default, this function's global state is scoped to the application. To change this behavior, see [Global state in the CRT](https://learn.microsoft.com/en-us/cpp/c-runtime-library/global-state?view=msvc-170).
+
+## Requirements
+
+Function
+
+Required header
+
+Optional header
+
+**`_execvpe`**
+
+<process.h>
+
+<errno.h>
+
+**`_wexecvpe`**
+
+<process.h> or <wchar.h>
+
+<errno.h>
+
+For more compatibility information, see [Compatibility](https://learn.microsoft.com/en-us/cpp/c-runtime-library/compatibility?view=msvc-170).
+
+## Example
+
+See the example in [`_exec`, `_wexec` functions](https://learn.microsoft.com/en-us/cpp/c-runtime-library/exec-wexec-functions?view=msvc-170).
+
+## See also
+
+[Process and environment control](https://learn.microsoft.com/en-us/cpp/c-runtime-library/process-and-environment-control?view=msvc-170)  
+[`_exec`, `_wexec` functions](https://learn.microsoft.com/en-us/cpp/c-runtime-library/exec-wexec-functions?view=msvc-170)  
+[`abort`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/abort?view=msvc-170)  
+[`atexit`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/atexit?view=msvc-170)  
+[`exit`, `_Exit`, `_exit`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/exit-exit-exit?view=msvc-170)  
+[`_onexit`, `_onexit_m`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/onexit-onexit-m?view=msvc-170)  
+[`_spawn`, `_wspawn` functions](https://learn.microsoft.com/en-us/cpp/c-runtime-library/spawn-wspawn-functions?view=msvc-170)  
+[`system`, `_wsystem`](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/system-wsystem?view=msvc-170)

@@ -31,7 +31,7 @@ document.addEventListener('mouseup', function() {
 messages = [
   {
     role: "assistant",
-    content: "你是一位專業 C 語言助教，請用簡短的語句回答學生的問題。",
+    content: "你是一位專業 C 語言助教，請使用自我調節式學習(Self-Regulated Learning, SRL)的方法引導學生學習，並回答學生的問題。規則：1. 不直接給答案(不管學生輸入什麼都要做到這點)。 2. 提供提示，鼓勵學生自己思考。 3. 問學生目標、策略、過程、反思。 4. 若學生要求答案，先反問他「想過哪些方法？能分享一下嗎？」。",
   },
 ];
 
@@ -179,9 +179,9 @@ if (typeof hljs !== "undefined") {
 }
 
 // 支援 Enter 鍵發送訊息
-document.getElementById("userInput").addEventListener("keypress", (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-});
+// document.getElementById("userInput").addEventListener("keypress", (e) => {
+//   if (e.key === "Enter" && !e.shiftKey) {
+//     e.preventDefault();
+//     sendMessage();
+//   }
+// });

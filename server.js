@@ -1,17 +1,13 @@
-require('dotenv').config();  // ← 這行一定要在最前面
 const { spawn } = require('child_process'); //
 const express = require("express");
 const db = require('./db'); // db.js 的檔案
 const fs = require("fs");
 const path = require("path");
+
 //compiler 測試
 const { WebSocketServer } = require('ws');
 const http = require('http');
-const cors = require('cors');
 
-
-const ragPath = path.join(__dirname, 'routes', 'rag.js'); // ← 路徑要跟真實位置一致
-console.log('[RAG path]', ragPath, 'exists?', fs.existsSync(ragPath));
 
 const crypto = require('crypto');
 const LIMITS = {
@@ -231,21 +227,7 @@ function parseSize(v) {
   return String(n * factor);
 }
 
-app.use(cors({
-  origin: ['http://localhost:5000', 'http://localhost:3000'],
-  methods: ['GET','POST','OPTIONS'],
-  allowedHeaders: ['Content-Type']
-})); // ← 允許跨源，含 preflight
-
 app.use(express.json());
-let ragRouter;
-try {
-  ragRouter = require(ragPath);
-  console.log('[RAG router loaded]', typeof ragRouter, ragRouter?.stack?.length);
-  app.use('/rag', ragRouter);
-} catch (e) {
-  console.error('[RAG router failed to load]', e);
-}
 app.use(express.static(path.join(__dirname, "static")));
 app.use(session({                       
     secret: "your-secret-key",
@@ -662,11 +644,6 @@ wss.on('connection', async (ws) => {
   // 編譯成功 → 受限容器互動執行（stdin/stdout 綁到此 ws）
   await runInteractiveInContainer(jobDir, ws, 30);
 });
-app.get('/rag/health', (req,res)=>res.json({ ok:true, from:'server.js' }));//可刪
-
-
-
-app.use((req, res) => res.status(404).send('Not Found'));
 
 server.listen(PORT,'0.0.0.0', () => {
   console.log(`Server running on http://localhost:${PORT}`);

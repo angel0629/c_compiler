@@ -17,13 +17,9 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
-      QDRANT_URL: "http://qdrant:6333"
-      OPENAI_API_KEY: "${OPENAI_API_KEY}"
-
     depends_on:
       - db
       - chatbot
-      - qdrant
     security_opt:
       - no-new-privileges:true
 
@@ -52,41 +48,8 @@ services:
       - .env
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-
-  qdrant:
-    image: qdrant/qdrant:latest
-    ports:
-      - "6333:6333"                 # REST / Web UI
-    # volumes:
-    #   - qdrant_storage:/qdrant/storage  # 持久化資料
-
-  rag-indexer:
-    image: node:20-slim
-    working_dir: /app
-    volumes:
-      - ./:/app                      # 掛你的專案
-    environment:
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      QDRANT_URL: http://qdrant:6333 # 用服務名直連
-      RAG_COLLECTION: knowledge_chunks
-      CHUNK_TOKENS: 500
-      CHUNK_OVERLAP: 80
-    command: >
-      bash -lc "
-        npm i --omit=dev &&
-        npm i jsdom @mozilla/readability turndown undici &&
-        node static/crawl_mslearn.js &&
-        node static/crawl_llvm.js &&
-        node static/indexer.js
-      "
-    depends_on:
-      - qdrant
-    restart: "no"                    # 一次性 job，跑完即退出
-
-
+      
 volumes:
   db_data:
   judge_jobs:
     name: judge_jobs
-  qdrant_storage:
-  

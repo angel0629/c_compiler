@@ -85,56 +85,78 @@ function normalizeUrl(raw) {
 }
 
 
-// /rag/answer：先檢索，有證據就用引用；無證據則（可選）後備到模型常識
+// /rag/answer：先檢索，有證據就組上下文並回答；回傳前做來源去重（沒 URL 也保留）
 router.post('/answer', async (req, res, next) => {
   try {
     const { q, topK = 6, threshold = 0.25 } = req.body || {};
     if (!q) return res.status(400).json({ error: 'q is required' });
 
-    // 1) 查嵌入
+    // 1) 查嵌入（與索引用同一模型）
     const emb = await openai.embeddings.create({ model: EMBEDDING_MODEL, input: q });
     const vector = emb.data[0].embedding;
 
-    // 2) Qdrant 搜尋（來源過濾 + 分數門檻）
+    // 2) Qdrant 檢索（來源白名單 + 分數門檻，低分直接不回）
     const filter = (ALLOWED && ALLOWED.length)
       ? { must: [{ key: 'source_tag', match: { any: ALLOWED } }] }
       : undefined;
 
     const results = await qdrant.search(COLLECTION, {
-      vector, limit: topK, with_payload: true, score_threshold: threshold, filter
+      vector, limit: topK, with_payload: true, filter
     });
 
+    // 3) 是否有足夠證據
+    const thr = Number(threshold ?? process.env.RAG_SCORE_THRESHOLD ?? 0) || 0;
     const best = results.reduce((m, r) => Math.max(m, r.score ?? 0), 0);
-    const hasEvidence = results.length > 0 && best >= threshold;
+    const hasEvidence = results.length > 0 && best >= thr;
 
     if (hasEvidence) {
-      // 用「全部命中」組上下文（保留原本答題效果）
-      const ctx = results.map((r, i) =>
-        `[${i+1}] ${r.payload?.title || '(no title)'}\n${r.payload?.source_url || ''}\n${r.payload?.text || ''}`
-      ).join('\n\n');
+      // 4) 用全部命中組上下文（編號以 [1] [2]...）
+      const ctx = results.map((r, i) => {
+        const title = r.payload?.title || '(no title)';
+        const url   = r.payload?.source_url || '';
+        const text  = String(r.payload?.text || '');
+        return `[${i + 1}] ${title}\n${url}\n${text}`;
+      }).join('\n\n');
 
       const chat = await openai.chat.completions.create({
         model: process.env.RAG_FALLBACK_MODEL || 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: '只根據提供段落回答，使用繁體中文；用到的句子後標 [1][2] 出處編號。' },
+          { role: 'system',
+            content: '你是一位專業 C 語言助教，請使用自我調節式學習(Self-Regulated Learning, SRL)的方法引導學生學習，並回答學生的問題。規則：1. 不直接給答案(不管學生輸入什麼都要做到這點)。 2. 提供提示，鼓勵學生自己思考。 3. 問學生目標、策略、過程、反思。 4. 若學生要求答案，先反問他「想過哪些方法？能分享一下嗎？」。只根據提供的段落回答，使用繁體中文；引用處以 [1][2] 編號標示。' },
           { role: 'user', content: `問題：${q}\n\n參考段落：\n${ctx}` }
         ],
         temperature: Number(process.env.RAG_FALLBACK_TEMP ?? 0.3)
       });
 
-      // ★ 顯示層去重：同一網址只留一筆（去 #、去追蹤參數、排序參數）
+      // 5) 顯示層去重：優先用 URL；沒有 URL 就用 source_path 或 title 當 key
       const seen = new Set();
       const displayHits = [];
       for (const r of results) {
-        const rawUrl = r.payload?.source_url || '';
-        const key = normalizeUrl(rawUrl);
+        const rawUrl = r.payload?.source_url || null;
+        const fallbackKey = String(
+          r.payload?.source_path || r.payload?.title || ''
+        ).trim().toLowerCase();
+
+        const key = rawUrl ? normalizeUrl(rawUrl) : fallbackKey; // 需要前面已定義 normalizeUrl()
         if (!key || seen.has(key)) continue;
         seen.add(key);
+
         displayHits.push({
           idx: displayHits.length + 1,
           score: r.score,
-          title: r.payload?.title,
-          source_url: rawUrl
+          title: r.payload?.title || '(no title)',
+          source_url: rawUrl    // 可能為 null，前端以 '#' 兜底
+        });
+      }
+
+      // 若真一筆都沒留下，至少保 1 筆，避免前端完全無參考
+      if (!displayHits.length && results.length) {
+        const r0 = results[0];
+        displayHits.push({
+          idx: 1,
+          score: r0.score,
+          title: r0.payload?.title || '(no title)',
+          source_url: r0.payload?.source_url || null
         });
       }
 
@@ -142,16 +164,16 @@ router.post('/answer', async (req, res, next) => {
         ok: true,
         mode: 'rag',
         answer: chat.choices[0]?.message?.content ?? '',
-        hits: displayHits      // ← 回傳「去重後」清單給前端顯示
+        hits: displayHits
       });
     }
 
-    // 沒證據 → 視設定決定是否用模型常識
-    if (String(process.env.RAG_ALLOW_MODEL_FALLBACK) === '1') {
+    // 6) 無證據 → 可選的模型後備
+    if (String(process.env.RAG_ALLOW_MODEL_FALLBACK || '1') === '1') {
       const chat = await openai.chat.completions.create({
         model: process.env.RAG_FALLBACK_MODEL || 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: '可用一般技術知識回答；若不確定請明說。繁體中文作答。' },
+          { role: 'system', content: '你是一位專業 C 語言助教，請使用自我調節式學習(Self-Regulated Learning, SRL)的方法引導學生學習，並回答學生的問題。規則：1. 不直接給答案(不管學生輸入什麼都要做到這點)。 2. 提供提示，鼓勵學生自己思考。 3. 問學生目標、策略、過程、反思。 4. 若學生要求答案，先反問他「想過哪些方法？能分享一下嗎？」。可用一般技術知識回答；若不確定請明說。繁體中文作答。' },
           { role: 'user', content: q }
         ],
         temperature: Number(process.env.RAG_FALLBACK_TEMP ?? 0.3)
@@ -160,11 +182,11 @@ router.post('/answer', async (req, res, next) => {
         ok: true,
         mode: 'model-fallback',
         answer: chat.choices[0]?.message?.content ?? '',
-        hits: []
+        hits: []   // 後備答案沒有引用
       });
     }
 
-    // 嚴格模式
+    // 7) 嚴格模式
     return res.json({ ok: true, mode: 'strict', answer: '找不到可引用的來源。', hits: [] });
   } catch (e) {
     next(e);

@@ -5,6 +5,11 @@ docker compose run --rm rag-indexer node static/crawl_mslearn.mjs
 docker compose run --rm rag-indexer node static/crawl_llvm.mjs
 
 
+docker compose run --rm `
+  --env QDRANT_URL=http://qdrant:6333 `
+  rag-indexer node static/indexer.mjs
+
+
 
 # 最後一步 寫入向量到 Qdrant
 docker compose run --rm rag-indexer node static/indexer.mjs

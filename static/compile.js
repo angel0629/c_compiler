@@ -264,7 +264,7 @@ window.addEventListener('DOMContentLoaded', () => {
       lines[0] = firstLine;
       preEl.textContent = lines.join('\n');
     }
-    panelEl.style.display = 'block';
+    //panelEl.style.display = 'block';
   }
 
   function debounce(fn, ms) { let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
@@ -352,7 +352,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         setStatus('【狀態】已更新（{time}）');
         preEl.textContent = `${preEl.textContent.split('\n')[0]}\n` + lines.join('\n');
-        panelEl.style.display = 'block';
+        //panelEl.style.display = 'block';
       } else {
         const msg = data?.error || `HTTP ${res.status}：伺服器回傳無效`;
         setStatus(`【狀態】發生錯誤：${msg}`);

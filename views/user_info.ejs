@@ -3,17 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <title>使用者資訊</title>
+  <link rel="stylesheet" href="/user_info.css">
 </head>
 <body>
-  <button onclick="home_page()">home</button>
-  <% if (user) { %>
-    <h2>使用者資訊</h2>
-    <p><strong>UID:</strong> <%= user.uid %></p>
-    <p><strong>帳號:</strong> <%= user.usrname %></p>
-    <p><strong>身份:</strong> <%= user.usr_group %></p>
-  <% } else { %>
-    <p>尚未登入</p>
-  <% } %>
+  <!-- Home button in top-left -->
+  <button class="home-btn" onclick="home_page()">Home</button>
+
+  <!-- Profile card -->
+  <div class="container">
+    <% if (user) { %>
+      <h2>使用者資訊</h2>
+      <p><strong>UID:</strong> <%= user.uid %></p>
+      <p><strong>帳號:</strong> <%= user.usrname %></p>
+      <p><strong>身份:</strong> <%= user.usr_group %></p>
+    <% } else { %>
+      <p>尚未登入</p>
+    <% } %>
+  </div>
+  <script src="/button.js"></script>
 </body>
-<script src="/button.js"></script>
 </html>

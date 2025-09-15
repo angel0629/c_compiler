@@ -1,0 +1,62 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f9fcff;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+.home-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: transparent; /* no background */
+  color: #1a4b8c; /* text color */
+  border: none;
+  padding: 10px 0; /* optional: remove horizontal padding */
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline; /* no underline initially */
+  transition: all 0.1s ease;
+}
+
+.home-btn:hover {
+  text-decoration: underline; /* underline on hover */
+  color: #869dbb; /* optional: change color on hover if needed */
+}
+
+
+/* Profile container */
+.container {
+  background: #ffffff;
+  margin-top: 250px;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 60, 120, 0.1);
+  width: 500px;
+  text-align: center;
+}
+
+/* Title */
+h2 {
+  color: #1a4b8c;
+  margin-bottom: 30px;
+  font-size: 22px;
+  border-bottom: 2px solid #e0e8f5;
+  padding-bottom: 10px;
+}
+
+/* Profile details */
+p {
+  font-size: 16px;
+  color: #333;
+  margin: 12px 0;
+}
+
+p strong {
+  color: #1a4b8c;
+}

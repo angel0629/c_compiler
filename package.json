@@ -27,6 +27,7 @@
     "turndown": "^7.2.1",
     "undici": "^7.16.0",
     "uuid": "^11.1.0",
+    "websocket": "^1.0.35",
     "ws": "^8.18.3"
   },
   "description": ""

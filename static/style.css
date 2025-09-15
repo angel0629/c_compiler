@@ -11,42 +11,75 @@ body {
 }
 .header {
   text-align: center;
+  font-size: 14px;
   padding: 0px;
   position: relative;
-  background-color: #4a90e2;
+  background-color: #70a2dc;
   color: white;
-  border-bottom: 2px solid #7db8f1;
+  border-bottom: none; 
 }
-.button-row {
-  background-color: #e9ecef;
-  padding: 5px 20px;
+.navbar {
+  background-color: hsl(0, 4%, 91%);
+  padding: 2px 20px;  /* reduced top/bottom padding */
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-bottom: none;
+  height: 40px;       /* optional fixed height */
+}
+
+.navbar-left,
+.navbar-right {
+  display: flex;
+  align-items: center;
   gap: 10px;
 }
-.execute-button, .submit-button, .save-button, .trace-button {
-  border-radius: 10px;
-  padding: 0px 10px;
-  font-size: 15px;
+.navbar-left .nav-btn {
+  background-color: #f9fafb; /* very light gray */
+  color: #374151;           /* slate gray */
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
+  padding: 6px 14px;
+  border-radius: 9999px; /* pill */
+  font-size: 14px;
   cursor: pointer;
-  border: none;
-  transition: all 0.3s ease;
+  transition: all 0.1s ease;
 }
-.execute-button {
-  background-color: #7db8f1;
+.navbar-left .nav-btn:hover {
+  background-color: #f3f4f6;
+  color: none; /* accent blue */
+  border-color: #d1d5db;
 }
-.submit-button {
-  background-color: #fd79a8;
+
+.navbar-left .nav-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
-.save-button {
-  background-color: #8bfd79;
-}
+
+.execute-button,
+.submit-button,
+.save-button,
 .trace-button {
-  background-color: #fdfb79;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  transition: all 0.1s ease;
+  font-weight: 500;
 }
+
+/* Muted pastel backgrounds */
+.execute-button { background-color: #eff6ff; color: #1d4ed8; }  /* soft blue */
+.submit-button  { background-color: #fef2f2; color: #dc2626; }  /* soft red */
+.save-button    { background-color: #f0fdf4; color: #16a34a; }  /* soft green */
+.trace-button   { background-color: #fffbeb; color: #ca8a04; }  /* soft amber */
+
+/* Hover effects */
 button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  opacity: 0.95;
 }
 .main-container {
   display: flex;
@@ -71,25 +104,17 @@ button:hover {
   display: flex;
   flex-direction: column;
 }
-#question-box h3 {
-  position: absolute;
-  top: 5px;
-  left: 15px;
-  margin-top: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #4a90e2;
-}
+
 .section-title {
   position: absolute;
   top: 5px;
   left: 15px;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: #4a90e2;
   border-bottom: 2px solid #4a90e2;
   padding-bottom: 4px;
-  margin: 0;
+  margin: 2px;
   width: calc(100% - 30px);
 }
 
@@ -178,24 +203,6 @@ button:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
 }
-#output-container h3 {
-  position: absolute;
-  top: 5px;
-  left: 15px;
-  margin-top: 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: #4a90e2;
-}
-#output, #problems, #problems_ai {
-  width: 100%;
-  max-height: 100%;
-  color: #333;
-  white-space: pre-wrap;
-  text-align: left;
-  margin-top: 30px;
-  overflow-y: auto;
-}
 
 /* Chat button styles */
 .chat-button {
@@ -204,7 +211,7 @@ button:hover {
   right: 20px;
   width: 50px;
   height: 50px;
-  background-color: #ffffff;
+  background-color: #ffffff !important;
   color: white;
   border-radius: 50%;
   display: flex;
@@ -216,7 +223,7 @@ button:hover {
   transition: background-color 0.3s ease;
 }
 .chat-button:hover {
-  background-color: #3578e5;
+  background-color: #d6d8da !important; 
 }
 
 /* Chat box sliding animation */
@@ -250,11 +257,6 @@ button:hover {
   position: absolute;
 }
 
-.headerBTN{
-  display: flex;
-  flex-direction: row;
-}
-
 .output-tabs {
   display: flex;
   gap: 12px;
@@ -269,24 +271,44 @@ button:hover {
   background-color: transparent;
   border: none;
   padding: 6px 10px;
-  font-size: 16px;
+  font-size: 14px;
   cursor: pointer;
   border-bottom: 2px solid transparent;
-  transition: border-color 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
+  color: #374151; /* dark gray */
+  font-weight: 500; /* keep normal weight */
 }
 
+.tab-button:hover {
+  border-bottom: 2px solid #000000; /* subtle underline on hover */
+  color: #8b95ab;                     /* hover color */
+  background-color: none; /* slight highlight */
+  transform: none;                     /* no pop-up */
+  box-shadow: none;                    /* no shadow */
+}
+
+/* Active tab: underline and color only, no bold */
 .tab-button.active {
-  border-bottom: 2px solid #4a90e2;
-  color: #4a90e2;
-  font-weight: bold;
+  font-weight: 500;                   /* same as normal */
+  font-size: 14px;                    /* keep same size */
+  color: #3177d3;                     /* active color */
+  border-bottom: 2px solid #4880e7;   /* underline */
 }
 
-#output, #problems,#terminal,#problems_ai {
-  margin-top: 50px;
+/* Ensure output boxes always stay inside container and scroll if too long */
+#terminal, #output, #problems, #problems_ai {
+  position: absolute;       /* fill parent container */
+  top: 40px;                /* leave space for tabs */
+  left: 0;
+  right: 0;
+  bottom: 0;                /* container bottom */
+  overflow-y: auto;         /* scroll if content too long */
+  padding: 10px 15px;
+  box-sizing: border-box;
   white-space: pre-wrap;
   font-size: 16px;
+  color: #333;
 }
-
 
 /* AI 按鈕*/
 .ai-switch{

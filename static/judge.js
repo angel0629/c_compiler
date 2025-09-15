@@ -82,11 +82,11 @@ async function submitAnswer() {
     let allPassed = true;
     result.results.forEach(({ input, expected, output, error, verdict }) => {
 
-        outputElement.innerText += `輸入: ${input}\n`;
-        outputElement.innerText += `正確輸出： ${expected}\n`;
-        outputElement.innerText += `實際輸出： ${output ?? "（無輸出）"}\n`;
+        // outputElement.innerText += `輸入: ${input}\n`;
+        // outputElement.innerText += `正確輸出： ${expected}\n`;
+        // outputElement.innerText += `實際輸出： ${output ?? "（無輸出）"}\n`;
         
-        if (verdict) outputElement.innerText += `判定： ${verdict}\n`;   // ← 顯示 TLE/MLE/RE/OK
+        // if (verdict) outputElement.innerText += `判定： ${verdict}\n`;   // ← 顯示 TLE/MLE/RE/OK
 
         // 只要有 verdict 且不是 OK，就算未通過；否則退回比對輸出與錯誤旗標
         if ((verdict && verdict !== 'OK') || (!verdict && (error || output !== expected))) {
@@ -95,7 +95,7 @@ async function submitAnswer() {
 
 
         if (error) outputElement.innerText += `ERROR: ${error}\n`;
-        outputElement.innerText += "-------------------------\n";
+        // outputElement.innerText += "-------------------------\n";
         if (verdict && verdict !== 'OK') allPassed = false;
         else if (output !== expected || error) allPassed = false; // OK 但輸出不等 → 也要 fail
 

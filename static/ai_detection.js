@@ -44,12 +44,12 @@
       const cur = preEl.textContent || "";
       if (!cur || cur.startsWith("【狀態】")) {
         preEl.textContent = statusLine;
-        panelEl.style.display = "block";
+        //panelEl.style.display = "block";
       } else {
         const lines = cur.split("\n");
         lines[0] = statusLine;
         preEl.textContent = lines.join("\n");
-        panelEl.style.display = "block";
+        //panelEl.style.display = "block";
       }
     }
   }
@@ -73,7 +73,7 @@
     if (statusLine) arr.push(statusLine);
     if (lines && lines.length) arr.push(...lines);
     preEl.textContent = arr.join("\n");
-    panelEl.style.display = "block";
+    //panelEl.style.display = "block";
   }
 
   // ====== 人性化輸出（兼容多種回傳格式） ======

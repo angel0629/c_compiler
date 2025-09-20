@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>C 語言線上 AI 互動學習平台｜首頁</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* 背景網格 + 漸層氛圍 */
+    body { background: radial-gradient(1200px 600px at 10% -10%, rgba(59,130,246,.12), rgba(59,130,246,0) 70%),
+                           radial-gradient(900px 500px at 110% 10%, rgba(16,185,129,.12), rgba(16,185,129,0) 60%),
+                           radial-gradient(1000px 600px at 50% 120%, rgba(139,92,246,.12), rgba(139,92,246,0) 60%); }
+    .grid-pattern { background-image: linear-gradient(to right, rgba(0,0,0,.05) 1px, transparent 1px),
+                                       linear-gradient(to bottom, rgba(0,0,0,.05) 1px, transparent 1px); background-size: 24px 24px; }
+    .shine { background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.5) 30%, rgba(255,255,255,0) 60%);
+             background-size: 200% 100%; animation: shine 6s linear infinite; -webkit-mask: linear-gradient(#000, #000); }
+    @keyframes shine { 0% { background-position: -120% 0; } 100% { background-position: 120% 0; } }
+  </style>
+</head>
+<body class="text-gray-800">
+  <!-- 頂部導覽 -->
+  <header class="sticky top-0 z-40 backdrop-blur bg-white/70 border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2 font-semibold text-lg">
+        <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">C</span>
+        <span>語言線上 AI 互動學習平台</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-6 text-sm text-gray-600">
+        <a class="hover:text-gray-900" href="#features">功能</a>
+        <a class="hover:text-gray-900" href="/docs">文檔</a>
+        <a class="hover:text-gray-900" href="/problem_list">題目</a>
+      </nav>
+      <a href="/login_page" class="text-sm px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50">登入</a>
+    </div>
+  </header>
+
+  <!-- Hero 區：大標語 -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 grid-pattern opacity-40 pointer-events-none"></div>
+    <div class="max-w-7xl mx-auto px-4 py-16 md:py-24">
+      <div class="max-w-3xl">
+        <p class="uppercase tracking-widest text-xs md:text-sm text-blue-600 font-semibold">Welcome to C Playground</p>
+        <h1 class="mt-3 text-4xl md:text-6xl font-extrabold leading-tight">
+          <span class="bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 bg-clip-text text-transparent">ARE YOU READY</span>
+          <span class="block mt-2 text-gray-900">to code C ?</span>
+        </h1>
+        <p class="mt-4 md:mt-6 text-gray-600 text-lg">從基礎語法到記憶體模型、從觀念到實作，這裡有完整的學習地圖與互動工具。開始你的練功之旅！</p>
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <a href="#features" class="px-5 py-3 rounded-xl bg-blue-600 text-white font-medium hover:bg-blue-700 shadow">探索功能</a>
+          <a href="/problem_list" class="px-5 py-3 rounded-xl bg-white text-blue-700 font-medium border border-blue-200 hover:bg-blue-50">直接刷題</a>
+        </div>
+        <div class="mt-8 flex items-center gap-2 text-sm text-gray-500">
+          <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+          互動式記憶體圖 · 逐行追蹤 · 即時錯誤提示
+        </div>
+      </div>
+    </div>
+    <!-- 弧形分隔 -->
+    <svg class="block text-white" viewBox="0 0 1440 120" preserveAspectRatio="none"><path fill="currentColor" d="M0,64L48,80C96,96,192,128,288,128C384,128,480,96,576,101.3C672,107,768,149,864,165.3C960,181,1056,171,1152,144C1248,117,1344,75,1392,53.3L1440,32L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"/></svg>
+  </section>
+
+  <!-- 功能卡片區 -->
+  <section id="features" class="bg-white">
+    <div class="max-w-7xl mx-auto px-4 py-12 md:py-16">
+      <div class="grid md:grid-cols-3 gap-6 md:gap-8">
+        <!-- 卡 1：文檔 -->
+        <article class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition overflow-hidden">
+          <div class="h-40 grid-pattern bg-gray-100 relative">
+            <div class="absolute inset-0 shine opacity-20"></div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-lg font-semibold">C 語言學習文檔</h3>
+            <p class="mt-1 text-gray-600">依主題整理，從<a class="text-blue-600">變數</a>、<a class="text-blue-600">陣列</a>、<a class="text-blue-600">指標</a>到 <span class="text-blue-600">記憶體管理</span>。</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <a href="/docs/variables" class="px-3 py-1 text-xs rounded-lg bg-blue-50 text-blue-700">變數</a>
+              <a href="/docs/arrays" class="px-3 py-1 text-xs rounded-lg bg-blue-50 text-blue-700">陣列</a>
+              <a href="/docs/pointers" class="px-3 py-1 text-xs rounded-lg bg-blue-50 text-blue-700">指標</a>
+              <a href="/docs/memory" class="px-3 py-1 text-xs rounded-lg bg-blue-50 text-blue-700">記憶體</a>
+            </div>
+            <a href="/docs" class="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700">
+              前往文檔
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </article>
+
+        <!-- 卡 2：練功房 -->
+        <article class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition overflow-hidden">
+          <div class="h-40 grid-pattern bg-gray-100 relative">
+            <div class="absolute inset-0 shine opacity-20"></div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-lg font-semibold">線上練功房</h3>
+            <p class="mt-1 text-gray-600">挑戰題目、查看解題記錄，從入門到進階逐步升級。</p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="px-3 py-1 text-xs rounded-lg bg-emerald-50 text-emerald-700">入門</span>
+              <span class="px-3 py-1 text-xs rounded-lg bg-emerald-50 text-emerald-700">陣列/字串</span>
+              <span class="px-3 py-1 text-xs rounded-lg bg-emerald-50 text-emerald-700">動態記憶體</span>
+            </div>
+            <a href="/problem_list" class="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700">
+              題目列表
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </article>
+
+        <!-- 卡 3：第三功能（可替換） -->
+        <article class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition overflow-hidden">
+          <div class="h-40 grid-pattern bg-gray-100 relative">
+            <div class="absolute inset-0 shine opacity-20"></div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-lg font-semibold">學習進度追蹤</h3>
+            <p class="mt-1 text-gray-600">章節完成度、通關題數、學習時數統計，一眼掌握學習成效。</p>
+            <div class="mt-4 grid grid-cols-3 gap-2 text-center text-sm">
+              <div class="rounded-lg bg-gray-50 p-3">
+                <div class="text-2xl font-bold text-gray-800">3/8</div>
+                <div class="text-gray-500">章節</div>
+              </div>
+              <div class="rounded-lg bg-gray-50 p-3">
+                <div class="text-2xl font-bold text-gray-800">12</div>
+                <div class="text-gray-500">題目</div>
+              </div>
+              <div class="rounded-lg bg-gray-50 p-3">
+                <div class="text-2xl font-bold text-gray-800">5h</div>
+                <div class="text-gray-500">時數</div>
+              </div>
+            </div>
+            <a href="/progress" class="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 text-white hover:bg-purple-700">
+              查看進度
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 亮點區：減少留白，補充賣點 -->
+  <section class="py-10 md:py-14">
+    <div class="max-w-7xl mx-auto px-4 grid md:grid-cols-3 gap-6">
+      <div class="p-5 rounded-2xl bg-white/70 border border-gray-100 shadow-sm">
+        <div class="flex items-center gap-3 mb-2"><span class="text-blue-600">🧠</span><b>理解，而不只是會寫</b></div>
+        <p class="text-gray-600">逐行追蹤與記憶體圖讓你真正看見變數、陣列、指標發生了什麼。</p>
+      </div>
+      <div class="p-5 rounded-2xl bg-white/70 border border-gray-100 shadow-sm">
+        <div class="flex items-center gap-3 mb-2"><span class="text-emerald-600">⚡</span><b>即時回饋</b></div>
+        <p class="text-gray-600">錯誤偵測、提示建議、互動練習，學習曲線更平滑。</p>
+      </div>
+      <div class="p-5 rounded-2xl bg-white/70 border border-gray-100 shadow-sm">
+        <div class="flex items-center gap-3 mb-2"><span class="text-purple-600">🧩</span><b>可擴充模組</b></div>
+        <p class="text-gray-600">文檔、題庫、助教、進度追蹤可獨立演進，方便後續擴充。</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="border-t border-gray-100 py-8 text-center text-sm text-gray-500">
+    © <span id="y"></span> C 語言學習平台 · Build to learn better.
+  </footer>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>

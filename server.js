@@ -126,13 +126,13 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// 首頁導向題目列表
+// 首頁
 app.get("/", (req, res) => {
-  res.redirect("/problem_list");
+  res.redirect("/home_page");
 });
 
 app.get('/home',(req,res) => {
-    res.redirect("/problem_list");
+    res.redirect("/home_page");
 });
 
 app.get("/user_info", (req, res)=> {
@@ -140,7 +140,14 @@ app.get("/user_info", (req, res)=> {
     res.render("user_info", { user });
 });
 
+app.get("/home_page", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "home.html"));
+});
 
+// C 語言 documents
+app.get("/docs", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "docs.html"));
+});
 
 // 程式追蹤
 app.post('/receive_code', (req, res) => {

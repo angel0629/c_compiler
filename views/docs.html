@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Docs｜C 語言學習平台</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-weak: #e8efff;
+      --border: #e5e7eb;
+      --accent: #10b981;
+      --code-bg: #0b1020;
+      --code-text: #e5f0ff;
+      --shadow: 0 10px 30px rgba(0,0,0,.06);
+    }
+    [data-theme="dark"] {
+      --bg: #0b1220;
+      --panel: #0f172a;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --primary: #60a5fa;
+      --primary-weak: #0b2246;
+      --border: #1f2937;
+      --accent: #34d399;
+      --code-bg: #0a0f1d;
+      --code-text: #dbeafe;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans TC", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    /* ===== Header ===== */
+    .header { position: sticky; top: 0; z-index: 50; backdrop-filter: saturate(180%) blur(8px); background: color-mix(in oklab, var(--panel) 80%, transparent); border-bottom: 1px solid var(--border); }
+    .header-inner { max-width: 1200px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: .2px; }
+    .brand-badge { width: 30px; height: 30px; display: grid; place-items: center; background: var(--primary); color: #fff; border-radius: 10px; box-shadow: var(--shadow); }
+
+    .search { position: relative; flex: 1; }
+    .search input { width: 100%; height: 40px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel); color: var(--text); padding: 0 44px 0 40px; outline: none; box-shadow: var(--shadow); }
+    .search .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: .6; }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel); color: var(--text); cursor: pointer; transition: .2s ease; }
+    .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .btn-primary { background: var(--primary); color: white; border-color: color-mix(in oklab, var(--primary) 60%, black); }
+
+    .progress { position: absolute; inset-inline: 0; top: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); transform-origin: 0 50%; transform: scaleX(0); }
+
+    /* ===== Layout ===== */
+    .layout { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 280px 1fr 250px; gap: 16px; padding: 16px; }
+    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); }
+
+    /* ===== Left Nav ===== */
+    .nav { position: sticky; top: 72px; max-height: calc(100dvh - 84px); overflow: auto; padding: 12px; }
+    .group { margin-bottom: 8px; }
+    .group > .group-title { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 10px; background: transparent; color: var(--text); border: 1px solid transparent; border-radius: 10px; cursor: pointer; font-weight: 700; }
+    .group[open] > .group-title, .group-title:hover { background: color-mix(in oklab, var(--primary-weak) 70%, var(--panel)); border-color: var(--primary-weak); }
+    .group-content { margin: 6px 0 10px 0; padding-left: 4px; }
+    .nav a { display: block; padding: 8px 10px; margin: 2px 0; color: var(--text); text-decoration: none; border-radius: 8px; }
+    .nav a:hover { background: color-mix(in oklab, var(--primary-weak) 70%, var(--panel)); }
+    .nav a.active { background: var(--primary); color: white; }
+
+    /* ===== Content ===== */
+    .content { padding: 24px; }
+    .breadcrumbs { font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+    h1 { font-size: 40px; margin: 8px 0 16px; }
+    h2 { font-size: 26px; margin: 28px 0 10px; border-bottom: 1px dashed var(--border); padding-bottom: 6px; }
+    h3 { font-size: 20px; margin: 16px 0 6px; }
+    p { color: var(--text); line-height: 1.75; }
+    .tip { margin: 14px 0; padding: 12px 14px; border-left: 4px solid var(--accent); background: color-mix(in oklab, var(--accent) 8%, var(--panel)); border-radius: 10px; }
+    .callout { margin: 14px 0; padding: 14px 16px; border: 1px dashed var(--border); border-radius: 12px; background: color-mix(in oklab, var(--primary-weak) 45%, var(--panel)); }
+
+    pre { background: var(--code-bg); color: var(--code-text); padding: 14px; border-radius: 12px; overflow: auto; position: relative; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 14px; }
+    .copy-btn { position: absolute; top: 8px; right: 8px; background: #ffffff20; color: #fff; border: 1px solid #ffffff40; border-radius: 8px; padding: 6px 8px; cursor: pointer; }
+
+    /* ===== Right: On this page ===== */
+    .toc { position: sticky; top: 72px; max-height: calc(100dvh - 84px); overflow: auto; padding: 16px; }
+    .toc h4 { margin: 0 0 10px; font-size: 14px; color: var(--muted); }
+    .toc a { display: block; color: var(--muted); text-decoration: none; padding: 6px 0; border-left: 2px solid transparent; padding-left: 8px; }
+    .toc a.active { color: var(--text); border-color: var(--primary); }
+
+    /* ===== Floating back-to-top ===== */
+    .to-top { position: fixed; right: 20px; bottom: 20px; padding: 10px 12px; border-radius: 10px; background: var(--primary); color: white; border: none; display: none; box-shadow: var(--shadow); }
+
+    /* ===== Mobile ===== */
+    @media (max-width: 1024px) {
+      .layout { grid-template-columns: 1fr; }
+      .nav, .toc { position: static; max-height: none; }
+      .panel { border-radius: 12px; }
+      .header-inner { gap: 8px; }
+      .btn.hamburger { display: inline-flex; }
+      .offcanvas { position: fixed; inset: 0; background: #0006; display: none; z-index: 60; }
+      .offcanvas.open { display: block; }
+      .offcanvas .drawer { position: absolute; left: 0; top: 0; bottom: 0; width: 80%; max-width: 320px; background: var(--panel); border-right: 1px solid var(--border); padding: 12px; overflow: auto; }
+    }
+    @media (min-width: 1025px) { .btn.hamburger { display: none; } }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="progress" id="progress"></div>
+    <div class="header-inner">
+      <button class="btn hamburger" id="openNav">☰</button>
+      <div class="brand"><div class="brand-badge">C</div> 語言線上 AI 互動學習平台</div>
+      <div class="search">
+        <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-3.6-3.6"/></svg>
+        <input id="searchInput" type="search" placeholder="搜尋文件與章節（按 / 可快速聚焦）" />
+      </div>
+      <div class="header-actions">
+        <button class="btn" id="themeBtn" title="切換深/淺色">🌓</button>
+        <a class="btn btn-primary" href="/">回首頁</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile offcanvas nav -->
+  <div class="offcanvas" id="offcanvas">
+    <div class="drawer panel">
+      <button class="btn" id="closeNav">關閉 ✕</button>
+      <div class="nav" id="navMobile"></div>
+    </div>
+  </div>
+
+  <main class="layout">
+    <!-- 左側：目錄 -->
+    <aside class="panel nav" id="nav"></aside>
+
+    <!-- 中間：內容 -->
+    <article class="panel content" id="content">
+      <div class="breadcrumbs">文件 › C 語言入門 › 簡介</div>
+      <h1>C 簡介</h1>
+      <p>本頁作為通用 docs 模板示例。左側是分類目錄，右側會自動生成「本頁章節」。上方提供搜尋、深淺色切換、卷軸進度條與回到頂部按鈕。此檔案可直接複製為 <code>docs.html</code> 並掛在你的平台。</p>
+
+      <div class="tip">提示：你可以把中心內容換成任意教學文本；範例段落會產生 <em>自動 TOC</em> 與 <em>ScrollSpy</em> 效果。</div>
+
+      <h2 id="what">什麼是 C？</h2>
+      <p>C 是一種通用程式語言，強調效率與可攜性，常用於系統程式與嵌入式開發。</p>
+
+      <h3 id="history">歷史</h3>
+      <p>由 Dennis Ritchie 於 1970s 在貝爾實驗室開發，與 UNIX 發展緊密相關。</p>
+
+      <h3 id="why">為什麼要學 C？</h3>
+      <ul>
+        <li>了解記憶體、指標等低階概念</li>
+        <li>為 C++、Rust、嵌入式開發奠基</li>
+        <li>培養解題與效能思維</li>
+      </ul>
+
+      <h2 id="start">開始使用</h2>
+      <p>試著編譯、執行以下程式，並觀察輸出。</p>
+      <pre><button class="copy-btn" data-copy>複製</button><code>#include <stdio.h>
+
+int main() {
+  printf("hello, C!\n");
+  return 0;
+}</code></pre>
+
+      <h2 id="next">下一步</h2>
+      <p>繼續閱讀變數、陣列、指標等章節，或直接前往題庫練習。</p>
+      <div class="callout">💡 小技巧：按鍵 <kbd>/</kbd> 可聚焦到上方搜尋；按鍵 <kbd>t</kbd> 可切換深淺色。</div>
+
+      <p style="height: 600px"></p>
+    </article>
+
+    <!-- 右側：本頁章節 -->
+    <aside class="panel toc" id="toc">
+      <h4>本頁章節</h4>
+      <nav id="tocItems"></nav>
+    </aside>
+  </main>
+
+  <button class="to-top" id="toTop">▲</button>
+
+  <script>
+    // ===== 目錄資料（可接後端產生） =====
+    const NAV_DATA = [
+      { title: 'C 教學', items: [
+        { text: 'C 簡介', href: '#what' },
+        { text: '開始使用', href: '#start' },
+        { text: '下一步', href: '#next' },
+      ]},
+      { title: '語法入門', items: [
+        { text: '變數與型別', href: '/docs/variables' },
+        { text: '運算子與運算式', href: '/docs/operators' },
+        { text: '流程控制', href: '/docs/flow' },
+        { text: '陣列', href: '/docs/arrays' },
+        { text: '指標', href: '/docs/pointers' },
+      ]},
+      { title: '進階主題', items: [
+        { text: '函式', href: '/docs/functions' },
+        { text: '結構/聯合', href: '/docs/structs' },
+        { text: '記憶體管理', href: '/docs/memory' },
+      ]}
+    ];
+
+    // ===== Render 左側 Nav（Desktop & Mobile） =====
+    function createNav(container) {
+      container.innerHTML = '';
+      NAV_DATA.forEach((group, i) => {
+        const details = document.createElement('details');
+        details.className = 'group';
+        if (i === 0) details.open = true;
+        const summary = document.createElement('summary');
+        summary.className = 'group-title';
+        summary.textContent = group.title;
+        const box = document.createElement('div');
+        box.className = 'group-content';
+        group.items.forEach((it) => {
+          const a = document.createElement('a');
+          a.href = it.href; a.textContent = it.text;
+          a.addEventListener('click', (e) => {
+            if (a.getAttribute('href').startsWith('#')) {
+              e.preventDefault();
+              document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+            }
+          });
+          box.appendChild(a);
+        });
+        details.appendChild(summary); details.appendChild(box);
+        container.appendChild(details);
+      });
+    }
+    createNav(document.getElementById('nav'));
+    createNav(document.getElementById('navMobile'));
+
+    // ===== 搜尋（左欄濾除） =====
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll('#nav .group').forEach(g => {
+        let any = false;
+        g.querySelectorAll('a').forEach(a => {
+          const match = a.textContent.toLowerCase().includes(q);
+          a.style.display = match ? '' : 'none';
+          if (match) any = true;
+        });
+        g.style.display = any || q === '' ? '' : 'none';
+      });
+    });
+    window.addEventListener('keydown', (e) => { if (e.key === '/') { e.preventDefault(); searchInput.focus(); } });
+
+    // ===== TOC 生成 =====
+    const toc = document.getElementById('tocItems');
+    const headings = document.querySelectorAll('#content h2, #content h3');
+    headings.forEach(h => {
+      const a = document.createElement('a');
+      a.textContent = h.textContent; a.href = '#' + (h.id || h.textContent.replace(/\s+/g, '-'));
+      a.style.marginLeft = h.tagName === 'H3' ? '12px' : '0';
+      a.addEventListener('click', (e) => { e.preventDefault(); document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth'}); });
+      toc.appendChild(a);
+    });
+
+    // ===== ScrollSpy for TOC & Nav =====
+    const spyTargets = [...headings];
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const id = '#' + entry.target.id;
+        const l = toc.querySelector(`a[href="${id}"]`);
+        if (l) l.classList.toggle('active', entry.isIntersecting && entry.intersectionRatio > 0.6);
+      });
+    }, { rootMargin: '0px 0px -65% 0px', threshold: [0.6] });
+    spyTargets.forEach(el => observer.observe(el));
+
+    // ===== 複製程式碼 =====
+    document.querySelectorAll('[data-copy]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const code = btn.nextElementSibling?.innerText || '';
+        navigator.clipboard.writeText(code).then(() => {
+          btn.textContent = '已複製!'; setTimeout(() => btn.textContent = '複製', 1200);
+        });
+      });
+    });
+
+    // ===== 深/淺色主題 =====
+    const themeBtn = document.getElementById('themeBtn');
+    function applyTheme(v){ document.documentElement.setAttribute('data-theme', v); localStorage.setItem('theme', v); }
+    applyTheme(localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'));
+    themeBtn.addEventListener('click', () => { const cur = document.documentElement.getAttribute('data-theme'); applyTheme(cur === 'dark' ? 'light' : 'dark'); });
+    window.addEventListener('keydown', (e)=>{ if(e.key==='t') themeBtn.click(); });
+
+    // ===== Back to top & progress =====
+    const toTop = document.getElementById('toTop');
+    const progress = document.getElementById('progress');
+    window.addEventListener('scroll', () => {
+      const h = document.documentElement; const sc = h.scrollTop; const max = h.scrollHeight - h.clientHeight; const p = max>0 ? sc/max : 0; progress.style.transform = `scaleX(${p})`;
+      toTop.style.display = sc > 300 ? 'block' : 'none';
+    });
+    toTop.addEventListener('click', ()=> window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // ===== Mobile offcanvas =====
+    const off = document.getElementById('offcanvas');
+    document.getElementById('openNav').addEventListener('click', ()=> off.classList.add('open'));
+    document.getElementById('closeNav').addEventListener('click', ()=> off.classList.remove('open'));
+    off.addEventListener('click', (e)=>{ if(e.target===off) off.classList.remove('open'); });
+  </script>
+</body>
+</html>
